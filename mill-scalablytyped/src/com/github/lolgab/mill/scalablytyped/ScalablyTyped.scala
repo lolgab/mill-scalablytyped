@@ -1,8 +1,8 @@
 package com.github.lolgab.mill.scalablytyped
 
 import mill._
-import mill.scalalib._
 import mill.scalajslib._
+import mill.scalalib._
 
 trait ScalablyTyped extends ScalaJSModule {
   // Using `resolveDeps` from `CoursierModule` incorrectly resolves
@@ -32,7 +32,8 @@ trait ScalablyTyped extends ScalaJSModule {
 
   private def scalablyTypedImportTask = T {
     packageJsonSource()
-    val ivyLocal = sys.props.get("ivy.home")
+    val ivyLocal = sys.props
+      .get("ivy.home")
       .map(os.Path(_))
       .getOrElse(os.home / ".ivy2") / "local"
 
@@ -48,7 +49,9 @@ trait ScalablyTyped extends ScalaJSModule {
           org = dep.groupId,
           name = dep.artifactId,
           version = dep.version,
-          cross = CrossVersion.empty(platformed = false) // it comes already platformed
+          cross = CrossVersion.empty(
+            platformed = false // it comes already platformed
+          )
         )
     }
 

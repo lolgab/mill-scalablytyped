@@ -5,6 +5,8 @@ import mill.scalajslib._
 import mill.scalajslib.api.ModuleKind
 import $exec.plugins
 import com.github.lolgab.mill.scalablytyped._
+import $ivy.`com.lihaoyi::utest:0.7.10`
+import utest._
 
 object module extends ScalaJSModule with ScalablyTyped {
   def scalaVersion = "3.1.0"
@@ -19,10 +21,11 @@ def prepare() = T.command {
 
 def verify() = T.command {
   val lines = Seq.newBuilder[String]
-  val out = os.ProcessOutput.Readlines(lines += _)
+  val processOutput = os.ProcessOutput.Readlines(lines += _)
 
   val js = module.fastOpt()
-  os.proc("node", js.path).call(stdout = out)
-  assert(lines.result() == "[[1,3],[2,4]]")
+  os.proc("node", js.path).call(stdout = processOutput)
+  val out = lines.result().mkString("\n").trim()
+  assert(out == "[ [ 1, 3 ], [ 2, 4 ] ]")
   ()
 }
