@@ -1,8 +1,8 @@
 package com.github.lolgab.mill.scalablytyped
 
 import mill._
-import mill.scalalib._
 import mill.scalajslib._
+import mill.scalalib._
 
 trait ScalablyTyped extends ScalaJSModule {
   // Using `resolveDeps` from `CoursierModule` incorrectly resolves
