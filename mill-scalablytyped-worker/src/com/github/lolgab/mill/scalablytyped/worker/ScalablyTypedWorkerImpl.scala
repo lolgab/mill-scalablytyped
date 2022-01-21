@@ -45,8 +45,6 @@ import org.scalablytyped.converter.internal.scalajs.Dep
 
 class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   class Paths(base: os.Path) {
-    lazy val out: os.Path =
-      files.existing(base / "out")
     val node_modules: Option[os.Path] =
       Option(base / "node_modules").filter(files.exists)
     val packageJson: Option[os.Path] =
@@ -54,10 +52,12 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   }
 
   override def scalablytypedImport(
-      base: java.nio.file.Path,
+      basePath: java.nio.file.Path,
       ivyHomePath: java.nio.file.Path,
+      targetPath: java.nio.file.Path,
       scalaVersion: String,
-      scalaJSVersion: String
+      scalaJSVersion: String,
+      ignoredLibs: Array[String]
   ): Array[ScalablyTypedWorkerDep] = {
 
     val DefaultOptions = ConversionOptions(
@@ -65,7 +65,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       outputPackage = Name.typings,
       enableScalaJsDefined = Selection.All,
       flavour = Flavour.Normal,
-      ignored = SortedSet("typescript"),
+      ignored = SortedSet("typescript") ++ ignoredLibs,
       stdLibs = SortedSet("es6"),
       expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,
       versions = Versions(
@@ -93,7 +93,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
     val DefaultConfig = Config(
       DefaultOptions,
       wantedLibs = SortedSet(),
-      inDirectory = os.pwd,
+      inDirectory = os.Path(basePath),
       includeDev = false,
       includeProject = false
     )
@@ -105,74 +105,6 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
 
     val logger: Logger[(Array[Logger.Stored], Unit)] =
       storing().zipWith(stdout.filter(LogLevel.warn))
-
-    // val ParseConversionOptions: OParser[Unit, Config] = {
-    //   val builder: OParserBuilder[Config] = OParser.builder[Config]
-    //   import builder._
-    //   OParser.sequence(
-    //     programName("stc"),
-    //     head(s"ScalablyTyped Converter (version ${BuildInfo.version})"),
-    //     help('h', "help"),
-    //     version('v', "version"),
-    //     opt[os.Path]('d', "directory")
-    //       .action((x, c) => c.copy(inDirectory = x))
-    //       .text("Specify another directory instead of the current directory where your package.json and node_modules is"),
-    //     opt[Boolean]("includeDev")
-    //       .action((x, c) => c.copy(includeDev = x))
-    //       .text("Include dev dependencies"),
-    //     opt[Boolean]("includeProject")
-    //       .action((x, c) => c.copy(includeProject = x))
-    //       .text("Include project in current directory"),
-    //     opt[Boolean]("useScalaJsDomTypes")
-    //       .action((x, c) => c.mapConversion(_.copy(useScalaJsDomTypes = x)))
-    //       .text(
-    //         "When true (which is the default) uses scala-js-dom types when possible instead of types we translate from typescript in std",
-    //       ),
-    //     opt[Flavour]('f', "flavour")
-    //       .action((x, c) => c.mapConversion(_.copy(flavour = x)))
-    //       .text(
-    //         s"One of ${Flavour.byName.keys.mkString(", ")}. See https://scalablytyped.org/docs/flavour",
-    //       ),
-    //     opt[Versions.ScalaJs]("scalajs")
-    //       .action((x, c) => c.mapConversion(cc => cc.copy(versions = cc.versions.copy(scalaJs = x))))
-    //       .text(s"Scala.js version"),
-    //     opt[Versions.Scala]("scala")
-    //       .action((x, c) => c.mapConversion(cc => cc.copy(versions = cc.versions.copy(scala = x))))
-    //       .text(s"Scala version"),
-    //     opt[String]("outputPackage")
-    //       .action((x, c) => c.mapConversion(_.copy(outputPackage = Name(x))))
-    //       .text(s"Output package"),
-    //     opt[Selection[TsIdentLibrary]]("enableScalaJSDefined")
-    //       .action((x, c) => c.mapConversion(_.copy(enableScalaJsDefined = x)))
-    //       .text(s"Libraries you want to enable @ScalaJSDefined traits for."),
-    //     opt[Seq[String]]('s', "stdlib")
-    //       .action((x, c) => c.mapConversion(_.copy(stdLibs = x.toSet.sorted)))
-    //       .text(s"Which parts of typescript stdlib you want to enable"),
-    //     opt[String]("organization")
-    //       .action((x, c) => c.mapConversion(_.copy(organization = x)))
-    //       .text(s"Organization used (locally) publish artifacts"),
-    //     opt[Seq[String]]("ignoredLibs")
-    //       .action((x, c) => c.mapConversion(_.copy(ignored = x.toSet.sorted)))
-    //       .text(s"Libraries you want to ignore"),
-    //     opt[String]("privateWithin")
-    //       .action((x, c) => c.mapConversion(_.copy(privateWithin = Some(Name(x)))))
-    //       .text(s"Libraries you want to ignore"),
-    //     opt[Boolean]("experimentalEnableImplicitOps")
-    //       .action { (x, c) =>
-    //         logger.warn("--experimentalEnableImplicitOps has no effect since it became the default encoding")
-    //         c
-    //       }
-    //       .text(s"Deprecated, doesn't do anything anymore"),
-    //     opt[Boolean]("enableLongApplyMethod")
-    //       .action((x, c) => c.mapConversion(_.copy(enableLongApplyMethod = x)))
-    //       .text(s"Enables long apply methods, instead of implicit ops builders"),
-    //     arg[Seq[TsIdentLibrary]]("libs")
-    //       .text("Libraries you want to convert from node_modules")
-    //       .unbounded()
-    //       .optional()
-    //       .action((x, c) => c.copy(wantedLibs = c.wantedLibs ++ x)),
-    //   )
-    // }
 
     def table(Key: Attr)(kvs: (String, String)*): Str = {
       val headerLength =
@@ -313,7 +245,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
           new Phase3Compile(
             versions = conversion.versions,
             compiler = compiler,
-            targetFolder = c.paths.out,
+            targetFolder = os.Path(targetPath),
             organization = conversion.organization,
             publishLocalFolder = publishLocalFolder,
             metadataFetcher = Npmjs.No,

@@ -30,6 +30,14 @@ trait ScalablyTyped extends ScalaJSModule {
     os.pwd / "package.json"
   }
 
+  /** The base path where package.json and node_modules are.
+    */
+  def scalablyTypedBasePath: T[os.Path] = T { os.pwd }
+
+  /** The typescript dependencies to ignore during the conversion
+    */
+  def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
+
   private def scalablyTypedImportTask = T {
     packageJsonSource()
     val ivyLocal = sys.props
@@ -37,11 +45,15 @@ trait ScalablyTyped extends ScalaJSModule {
       .map(os.Path(_))
       .getOrElse(os.home / ".ivy2") / "local"
 
+    val targetPath = T.dest / "out"
+
     val deps = scalablyTypedWorker().scalablytypedImport(
-      os.pwd.toNIO,
+      scalablyTypedBasePath().toNIO,
       ivyLocal.toNIO,
+      targetPath.toNIO,
       scalaVersion(),
-      scalaJSVersion()
+      scalaJSVersion(),
+      scalablyTypedIgnoredLibs().toArray
     )
     deps.map { dep =>
       Dep
