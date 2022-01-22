@@ -27,12 +27,12 @@ trait ScalablyTyped extends ScalaJSModule {
   }
 
   private def packageJsonSource = T.source {
-    os.pwd / "package.json"
+    scalablyTypedBasePath() / "package.json"
   }
 
   /** The base path where package.json and node_modules are.
     */
-  def scalablyTypedBasePath: T[os.Path] = T { os.pwd }
+  def scalablyTypedBasePath: T[os.Path] = T { T.workspace }
 
   /** The typescript dependencies to ignore during the conversion
     */
