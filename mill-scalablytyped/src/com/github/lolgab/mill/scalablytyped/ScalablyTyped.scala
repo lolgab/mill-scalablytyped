@@ -34,7 +34,7 @@ trait ScalablyTyped extends ScalaJSModule {
     */
   def scalablyTypedBasePath: T[os.Path] = T { T.workspace }
 
-  /** The typescript dependencies to ignore during the conversion
+  /** The TypeScript dependencies to ignore during the conversion
     */
   def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
 
