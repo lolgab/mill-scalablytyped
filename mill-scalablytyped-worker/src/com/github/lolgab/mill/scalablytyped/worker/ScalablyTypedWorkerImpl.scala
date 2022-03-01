@@ -275,9 +275,14 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
         .getOrElse(Map.empty)
 
     if (failures.nonEmpty) {
+      val allIgnoredLibs = ignoredLibs ++ failures.keys.map(_.libName.value)
+      val allIgnoredLibsString = allIgnoredLibs
+        .map(lib => s""""$lib"""")
+        .mkString(", ")
       println(
         Color.Red(
-          s"Failure: You might try --ignoredLibs ${failures.keys.map(_.libName.value).mkString(", ")}"
+          s"""Failure: You might try to set:
+          |  def scalablyTypedIgnoredLibs = Seq($allIgnoredLibsString)""".stripMargin
         )
       )
 
