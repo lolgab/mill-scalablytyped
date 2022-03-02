@@ -21,8 +21,8 @@ object module extends ScalaJSModule with ScalablyTyped {
 Then you can import this module in your `build.sc` file:
 
 ```scala
-import mill._, mill.scalalib._, mill.scalajslib._
 import $file.scalablytyped
+import mill._, mill.scalalib._, mill.scalajslib._
 
 object app extends ScalaJSModule {
   def scalaVersion = "3.1.0"
@@ -36,8 +36,11 @@ It will run ScalablyTyped to convert the libraries in `package.json` and then ad
 
 ### Mill version note
 
-Make sure to use a Mill version greater than `0.10.0-60-4dcea9` otherwise the changes to the `build.sc`
+Make sure to use a Mill version greater than `0.10.0-67-524491` otherwise the changes to the `build.sc`
 file will re-trigger the Scalablytyped converter.
+Also make sure that `import $file.scalablytyped` is one of the first imports in your `build.sc`, because
+Ammonite recompiles all the next imported classes when a imported file changes. If the scalablytyped file
+is imported earlier, there are less chances of doing useless recompilations with ScalablyTyped.
 
 ## Configuration
 
