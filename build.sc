@@ -36,7 +36,8 @@ trait CommonPublish extends PublishModule {
   def publishVersion = VcsVersion.vcsState().format()
 }
 
-object `mill-scalablytyped` extends Cross[MillScalablyTypedCross](millBinaryVersions: _*)
+object `mill-scalablytyped`
+    extends Cross[MillScalablyTypedCross](millBinaryVersions: _*)
 class MillScalablyTypedCross(millBinaryVersion: String)
     extends ScalaModule
     with CommonPublish
@@ -46,7 +47,8 @@ class MillScalablyTypedCross(millBinaryVersion: String)
   override def artifactName = s"mill-scalablytyped_mill$millBinaryVersion"
 
   override def sources = T.sources(
-    super.sources() ++ Seq(millSourcePath / s"src-mill$millBinaryVersion").map(PathRef(_))
+    super.sources() ++ Seq(millSourcePath / s"src-mill$millBinaryVersion")
+      .map(PathRef(_))
   )
   def scalaVersion = "2.13.8"
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
@@ -74,7 +76,8 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
   def scalaVersion = "2.12.12"
   def ivyDeps = Agg(
-    ivy"org.scalablytyped.converter::importer:1.0.0-beta37"
+    ivy"org.scalablytyped.converter::importer:1.0.0-beta37",
+    ivy"org.apache.logging.log4j:log4j-core:2.17.2"
   )
 }
 
@@ -83,9 +86,9 @@ class itestCross(millVersion: String) extends MillIntegrationTestModule {
   override def millSourcePath: Path = super.millSourcePath / os.up
   def millTestVersion = millVersion
   def pluginsUnderTest = Seq(
-    `mill-scalablytyped`(millBinaryVersion(millVersion)),
+    `mill-scalablytyped`(millBinaryVersion(millVersion))
   )
-  def temporaryIvyModules = Seq(  
+  def temporaryIvyModules = Seq(
     `mill-scalablytyped-worker`,
     `mill-scalablytyped-worker-api`
   )
