@@ -36,8 +36,8 @@ It will run ScalablyTyped to convert the libraries in `package.json` and then ad
 
 ### Mill version note
 
-Make sure to use a Mill version greater than `0.10.0-67-524491` otherwise the changes to the `build.sc`
-file will re-trigger the Scalablytyped converter.
+Make sure to use a Mill version greater than `0.10.1` otherwise the changes to the `build.sc` file will
+re-trigger the Scalablytyped converter.
 Also make sure that `import $file.scalablytyped` is one of the first imports in your `build.sc`, because
 Ammonite recompiles all the next imported classes when a imported file changes. If the scalablytyped file
 is imported earlier, there are less chances of doing useless recompilations with ScalablyTyped.
