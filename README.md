@@ -55,6 +55,18 @@ The typescript dependencies to ignore during the conversion
 
 ## Changelog
 
+### 0.0.4
+
+Bump vulnerable log4j dependency
+
+### 0.0.3
+
+Improve error messages on failure
+
+### 0.0.2
+
+Add `scalablyTypedBasePath` and `scalablyTypedIgnoredLibs` configurations
+
 ### 0.0.1
 
 First release
