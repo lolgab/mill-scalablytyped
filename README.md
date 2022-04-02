@@ -12,7 +12,7 @@ import mill._, mill.scalalib._, mill.scalajslib._
 import $ivy.`com.github.lolgab::mill-scalablytyped::x.y.z`
 import com.github.lolgab.mill.scalablytyped._
 
-object module extends ScalaJSModule with ScalablyTyped {
+object `scalablytyped-module` extends ScalaJSModule with ScalablyTyped {
   def scalaVersion = "3.1.0"
   def scalaJSVersion = "1.8.0"
 }
@@ -27,7 +27,7 @@ import mill._, mill.scalalib._, mill.scalajslib._
 object app extends ScalaJSModule {
   def scalaVersion = "3.1.0"
   def scalaJSVersion = "1.8.0"
-  def moduleDeps = Seq(scalablytyped.module)
+  def moduleDeps = Seq(scalablytyped.`scalablytyped-module`)
 }
 ```
 
