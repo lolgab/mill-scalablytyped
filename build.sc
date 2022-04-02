@@ -5,11 +5,11 @@ import mill.scalalib.api.Util.scalaNativeBinaryVersion
 import mill.scalalib.publish._
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 import mill.contrib.buildinfo.BuildInfo
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.4.1-16-63f11c`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.5.0`
 import de.tobiasroeser.mill.integrationtest._
 import $ivy.`com.goyeau::mill-scalafix::0.2.8`
 import com.goyeau.mill.scalafix.ScalafixModule
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.1.1`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.1.4`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 import os.Path
 
@@ -67,7 +67,7 @@ class MillScalablyTypedCross(millBinaryVersion: String)
   def scalacOptions =
     super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation")
 
-  def scalafixIvyDeps = Agg(ivy"com.github.liancheng::organize-imports:0.4.4")
+  def scalafixIvyDeps = Agg(ivy"com.github.liancheng::organize-imports:0.6.0")
 }
 
 object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
