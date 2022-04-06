@@ -3,6 +3,7 @@ package com.github.lolgab.mill.scalablytyped
 import mill._
 import mill.scalajslib._
 import mill.scalalib._
+import com.github.lolgab.mill.scalablytyped.worker.api.StMillFlavour
 
 trait ScalablyTyped extends ScalaJSModule {
   // Using `resolveDeps` from `CoursierModule` incorrectly resolves
@@ -38,6 +39,10 @@ trait ScalablyTyped extends ScalaJSModule {
     */
   def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
 
+  def stFlavour: T[StMillFlavour] = T {
+    StMillFlavour.Normal
+  }
+
   private def scalablyTypedImportTask = T {
     packageJsonSource()
     val ivyLocal = sys.props
@@ -53,7 +58,8 @@ trait ScalablyTyped extends ScalaJSModule {
       targetPath.toNIO,
       scalaVersion(),
       scalaJSVersion(),
-      scalablyTypedIgnoredLibs().toArray
+      scalablyTypedIgnoredLibs().toArray,
+      stFlavour()
     )
     deps.map { dep =>
       Dep

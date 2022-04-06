@@ -51,20 +51,28 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       Option(base / "package.json").filter(files.exists)
   }
 
+  def flavourConvert(flavour: StMillFlavour) = flavour match {
+    case StMillFlavour.Normal       => Flavour.Normal
+    case StMillFlavour.ScalajsReact => Flavour.ScalajsReact
+    case StMillFlavour.Slinky       => Flavour.Slinky
+    case StMillFlavour.SlinkyNative => Flavour.SlinkyNative
+  }
+
   override def scalablytypedImport(
       basePath: java.nio.file.Path,
       ivyHomePath: java.nio.file.Path,
       targetPath: java.nio.file.Path,
       scalaVersion: String,
       scalaJSVersion: String,
-      ignoredLibs: Array[String]
+      ignoredLibs: Array[String],
+      flavour: StMillFlavour = StMillFlavour.Normal
   ): Array[ScalablyTypedWorkerDep] = {
 
     val DefaultOptions = ConversionOptions(
       useScalaJsDomTypes = true,
       outputPackage = Name.typings,
       enableScalaJsDefined = Selection.All,
-      flavour = Flavour.Normal,
+      flavour = flavourConvert(flavour),
       ignored = SortedSet("typescript") ++ ignoredLibs,
       stdLibs = SortedSet("es6"),
       expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,
