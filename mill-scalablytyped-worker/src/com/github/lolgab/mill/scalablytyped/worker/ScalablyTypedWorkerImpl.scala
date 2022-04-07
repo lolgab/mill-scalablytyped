@@ -51,11 +51,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       Option(base / "package.json").filter(files.exists)
   }
 
-  def flavourConvert(flavour: StMillFlavour) = flavour match {
-    case StMillFlavour.Normal       => Flavour.Normal
-    case StMillFlavour.ScalajsReact => Flavour.ScalajsReact
-    case StMillFlavour.Slinky       => Flavour.Slinky
-    case StMillFlavour.SlinkyNative => Flavour.SlinkyNative
+  def toScalablyTyped(flavour: ScalablyTypedWorkerFlavour) = flavour match {
+    case ScalablyTypedWorkerFlavour.Normal       => Flavour.Normal
+    case ScalablyTypedWorkerFlavour.ScalajsReact => Flavour.ScalajsReact
+    case ScalablyTypedWorkerFlavour.Slinky       => Flavour.Slinky
+    case ScalablyTypedWorkerFlavour.SlinkyNative => Flavour.SlinkyNative
   }
 
   override def scalablytypedImport(
@@ -65,14 +65,14 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       scalaVersion: String,
       scalaJSVersion: String,
       ignoredLibs: Array[String],
-      flavour: StMillFlavour = StMillFlavour.Normal
+      flavour: ScalablyTypedWorkerFlavour
   ): Array[ScalablyTypedWorkerDep] = {
 
     val DefaultOptions = ConversionOptions(
       useScalaJsDomTypes = true,
       outputPackage = Name.typings,
       enableScalaJsDefined = Selection.All,
-      flavour = flavourConvert(flavour),
+      flavour = toScalablyTyped(flavour),
       ignored = SortedSet("typescript") ++ ignoredLibs,
       stdLibs = SortedSet("es6"),
       expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,

@@ -1,9 +1,9 @@
 package com.github.lolgab.mill.scalablytyped
 
+import com.github.lolgab.mill.scalablytyped.worker.api.ScalablyTypedWorkerFlavour
 import mill._
 import mill.scalajslib._
 import mill.scalalib._
-import com.github.lolgab.mill.scalablytyped.worker.api.StMillFlavour
 
 trait ScalablyTyped extends ScalaJSModule {
   // Using `resolveDeps` from `CoursierModule` incorrectly resolves
@@ -39,8 +39,10 @@ trait ScalablyTyped extends ScalaJSModule {
     */
   def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
 
-  def stFlavour: T[StMillFlavour] = T {
-    StMillFlavour.Normal
+  /** ScalablyTyped flavours so far enables rich interop with react.
+    */
+  def scalablyTypedFlavour: T[Flavour] = T {
+    Flavour.Normal
   }
 
   private def scalablyTypedImportTask = T {
@@ -52,6 +54,13 @@ trait ScalablyTyped extends ScalaJSModule {
 
     val targetPath = T.dest / "out"
 
+    val flavour = scalablyTypedFlavour() match {
+      case Flavour.Normal       => ScalablyTypedWorkerFlavour.Normal
+      case Flavour.Slinky       => ScalablyTypedWorkerFlavour.Slinky
+      case Flavour.SlinkyNative => ScalablyTypedWorkerFlavour.SlinkyNative
+      case Flavour.ScalajsReact => ScalablyTypedWorkerFlavour.ScalajsReact
+    }
+
     val deps = scalablyTypedWorker().scalablytypedImport(
       scalablyTypedBasePath().toNIO,
       ivyLocal.toNIO,
@@ -59,7 +68,7 @@ trait ScalablyTyped extends ScalaJSModule {
       scalaVersion(),
       scalaJSVersion(),
       scalablyTypedIgnoredLibs().toArray,
-      stFlavour()
+      flavour
     )
     deps.map { dep =>
       Dep
