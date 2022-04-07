@@ -53,7 +53,16 @@ Defaults to the project root directory (the directory of `build.sc`).
 
 The typescript dependencies to ignore during the conversion
 
+### scalablyTypedFlavour
+
+The React flavour used by ScalablyTyped
+Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Flavour.ScalajsReact` 
+
 ## Changelog
+
+### 0.0.5
+
+Add support for `scalablyTypedFlavour`
 
 ### 0.0.4
 
