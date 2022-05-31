@@ -283,16 +283,25 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
         .getOrElse(Map.empty)
 
     if (failures.nonEmpty) {
-      val allIgnoredLibs = ignoredLibs ++ failures.keys.map(_.libName.value)
-      val allIgnoredLibsString = allIgnoredLibs
-        .map(lib => s""""$lib"""")
-        .mkString(", ")
-      println(
-        Color.Red(
-          s"""Failure: You might try to set:
-          |  def scalablyTypedIgnoredLibs = Seq($allIgnoredLibsString)""".stripMargin
+      val failuresLibs =
+        failures.keys.map(_.libName.value).filter(_ != "std").toSeq
+      if (failuresLibs.nonEmpty) {
+        val allIgnoredLibs = ignoredLibs ++ failuresLibs
+        val allIgnoredLibsString = allIgnoredLibs
+          .map(lib => s""""$lib"""")
+          .mkString(", ")
+        println(
+          Color.Red(
+            s"""Failure: You might try to set:
+            |  def scalablyTypedIgnoredLibs = Seq($allIgnoredLibsString)""".stripMargin
+          )
         )
-      )
+      } else if (scalaVersion == "3.1.2") {
+        Color.Red("""Failure: There is a known problem with Scala 3.1.2
+          |Try to downgrade to Scala 3.1.1""".stripMargin)
+      } else {
+        Color.Red("Failure. Unknown problem.")
+      }
 
       failures.foreach {
         case (source, Left(value)) =>
