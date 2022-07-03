@@ -120,7 +120,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       val massaged = kvs.flatMap { case (header, value) =>
         Seq[Str](Key(header.padTo(headerLength, ' ')), value, "\n")
       }
-      Str.join(massaged: _*)
+      Str.join(massaged)
     }
 
     val c: Config = DefaultConfig
