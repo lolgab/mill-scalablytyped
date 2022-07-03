@@ -60,6 +60,10 @@ Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Fl
 
 ## Changelog
 
+### 0.0.6
+
+Update ScalablyTyped to `1.0.0-beta38`
+
 ### 0.0.5
 
 Add support for `scalablyTypedFlavour`
