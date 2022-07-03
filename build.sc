@@ -3,7 +3,7 @@ import mill._
 import mill.scalalib._
 import mill.scalalib.api.Util.scalaNativeBinaryVersion
 import mill.scalalib.publish._
-import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-buildinfo:`
 import mill.contrib.buildinfo.BuildInfo
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.5.0`
 import de.tobiasroeser.mill.integrationtest._
@@ -74,9 +74,9 @@ object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
 
 object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
-  def scalaVersion = "2.12.12"
+  def scalaVersion = "2.12.16"
   def ivyDeps = Agg(
-    ivy"org.scalablytyped.converter::importer:1.0.0-beta37",
+    ivy"org.scalablytyped.converter::importer:1.0.0-beta38",
     ivy"org.apache.logging.log4j:log4j-core:2.17.2"
   )
 }

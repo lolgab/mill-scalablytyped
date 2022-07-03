@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Mill cache
@@ -39,23 +39,23 @@ jobs:
         architecture: x64
     - name: Check formatting
       run: 
-        ./mill -i mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
+        ./mill --no-server --disable-ticker mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
     - name: Check scalafix
       run: 
-        ./mill -i __.fix --check
+        ./mill --no-server --disable-ticker __.fix --check
     - name: Compile
       run: 
-        ./mill -i __.compile
+        ./mill --no-server --disable-ticker __.compile
     - name: Publish Artifacts
       run: 
-        ./mill -i __.publishArtifacts
+        ./mill --no-server --disable-ticker __.publishArtifacts
     - name: Test
       run:
-        ./mill -i __.test
+        ./mill --no-server --disable-ticker __.test
   publish-sonatype:
     if: github.repository == 'lolgab/mill-scalablytyped' && contains(github.ref, 'refs/tags/')
     needs: build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       SONATYPE_PGP_PRIVATE_KEY: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY }}
       SONATYPE_PGP_PRIVATE_KEY_PASSWORD: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY_PASSWORD }}
@@ -94,7 +94,7 @@ jobs:
             echo $SONATYPE_PGP_PRIVATE_KEY | base64 --decode > gpg_key
             gpg --import --no-tty --batch --yes gpg_key
             rm gpg_key
-            ./mill -i mill.scalalib.PublishModule/publishAll \
+            ./mill --no-server --disable-ticker mill.scalalib.PublishModule/publishAll \
               --sonatypeCreds $SONATYPE_USER:$SONATYPE_PASSWORD \
               --gpgArgs --passphrase=$SONATYPE_PGP_PRIVATE_KEY_PASSWORD,--no-tty,--pinentry-mode,loopback,--batch,--yes,-a,-b \
               --publishArtifacts __.publishArtifacts \
