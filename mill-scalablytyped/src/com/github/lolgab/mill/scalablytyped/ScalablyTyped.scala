@@ -2,6 +2,7 @@ package com.github.lolgab.mill.scalablytyped
 
 import com.github.lolgab.mill.scalablytyped.worker.api.ScalablyTypedWorkerFlavour
 import mill._
+import mill.modules.Jvm
 import mill.scalajslib._
 import mill.scalalib._
 
@@ -27,8 +28,22 @@ trait ScalablyTyped extends ScalaJSModule {
     ScalablyTypedWorkerApi.scalablyTypedWorker().impl(classpath)
   }
 
-  private def packageJsonSource = T.source {
+  private def scalablyTypedPackageJsonSource = T.source {
     PathRef(scalablyTypedBasePath() / "package.json")
+  }
+
+  /** The command used to install npm dependencies. Default: `Seq("npm", "install")`
+    */
+  def scalablytypedInstallCommand: T[Seq[String]] = T { Seq("npm", "install") }
+
+  private def scalablytypedInstallDependenciesTask = T {
+    scalablyTypedPackageJsonSource()
+    Jvm.runSubprocess(
+      scalablytypedInstallCommand(),
+      Map.empty[String, String],
+      scalablyTypedBasePath()
+    )
+    PathRef(scalablyTypedBasePath() / "node_modules", quick = true)
   }
 
   /** The base path where package.json and node_modules are.
@@ -46,7 +61,7 @@ trait ScalablyTyped extends ScalaJSModule {
   }
 
   private def scalablyTypedImportTask = T {
-    packageJsonSource()
+    scalablytypedInstallDependenciesTask()
     val ivyLocal = sys.props
       .get("ivy.home")
       .map(os.Path(_))
