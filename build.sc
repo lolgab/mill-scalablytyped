@@ -96,7 +96,6 @@ class itestCross(millVersion: String) extends MillIntegrationTestModule {
   def testInvocations = T {
     Seq(
       PathRef(testBase / "simple") -> Seq(
-        TestInvocation.Targets(Seq("prepare")),
         TestInvocation.Targets(Seq("verify"))
       )
     )

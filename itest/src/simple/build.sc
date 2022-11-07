@@ -5,18 +5,13 @@ import mill.scalajslib._
 import mill.scalajslib.api.ModuleKind
 import $exec.plugins
 import com.github.lolgab.mill.scalablytyped._
-import $ivy.`com.lihaoyi::utest:0.7.10`
+import $ivy.`com.lihaoyi::utest:0.8.1`
 import utest._
 
 object module extends ScalaJSModule with ScalablyTyped {
-  def scalaVersion = "3.1.0"
-  def scalaJSVersion = "1.8.0"
+  def scalaVersion = "3.2.0"
+  def scalaJSVersion = "1.11.0"
   def moduleKind = ModuleKind.CommonJSModule
-}
-
-def prepare() = T.command {
-  os.proc("npm", "install").call()
-  ()
 }
 
 def verify() = T.command {
