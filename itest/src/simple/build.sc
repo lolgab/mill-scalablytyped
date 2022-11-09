@@ -9,7 +9,7 @@ import $ivy.`com.lihaoyi::utest:0.8.1`
 import utest._
 
 object module extends ScalaJSModule with ScalablyTyped {
-  def scalaVersion = "3.2.0"
+  def scalaVersion = "2.13.10"
   def scalaJSVersion = "1.11.0"
   def moduleKind = ModuleKind.CommonJSModule
 }

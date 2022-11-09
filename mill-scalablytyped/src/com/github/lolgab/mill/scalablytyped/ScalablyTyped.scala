@@ -32,7 +32,8 @@ trait ScalablyTyped extends ScalaJSModule {
     PathRef(scalablyTypedBasePath() / "package.json")
   }
 
-  /** The command used to install npm dependencies. Default: `Seq("npm", "install")`
+  /** The command used to install npm dependencies. Default: `Seq("npm",
+    * "install")`
     */
   def scalablytypedInstallCommand: T[Seq[String]] = T { Seq("npm", "install") }
 
