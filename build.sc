@@ -1,5 +1,4 @@
 import mill._
-
 import mill.scalalib._
 import mill.scalalib.api.Util.scalaNativeBinaryVersion
 import mill.scalalib.publish._
