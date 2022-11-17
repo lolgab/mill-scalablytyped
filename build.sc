@@ -7,7 +7,7 @@ import $ivy.`com.lihaoyi::mill-contrib-buildinfo:`
 import mill.contrib.buildinfo.BuildInfo
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.6.1`
 import de.tobiasroeser.mill.integrationtest._
-import $ivy.`com.goyeau::mill-scalafix::0.2.8`
+import $ivy.`com.goyeau::mill-scalafix::0.2.11`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.2.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
@@ -50,7 +50,7 @@ class MillScalablyTypedCross(millBinaryVersion: String)
     super.sources() ++ Seq(millSourcePath / s"src-mill$millBinaryVersion")
       .map(PathRef(_))
   )
-  def scalaVersion = "2.13.8"
+  def scalaVersion = "2.13.10"
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
     ivy"com.lihaoyi::mill-scalajslib:${millVersion(millBinaryVersion)}"
   )
@@ -76,12 +76,12 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
   def scalaVersion = "2.12.16"
   def ivyDeps = Agg(
-    ivy"org.scalablytyped.converter::importer:1.0.0-beta39",
+    ivy"org.scalablytyped.converter::importer:1.0.0-beta40",
     ivy"org.apache.logging.log4j:log4j-core:2.17.2"
   )
 }
 
-object itest extends Cross[itestCross]("0.10.0", "0.10.7")
+object itest extends Cross[itestCross]("0.10.0", "0.10.9")
 class itestCross(millVersion: String) extends MillIntegrationTestModule {
   override def millSourcePath: Path = super.millSourcePath / os.up
   def millTestVersion = millVersion
