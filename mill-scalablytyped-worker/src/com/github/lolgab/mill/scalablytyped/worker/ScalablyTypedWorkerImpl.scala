@@ -20,6 +20,7 @@ import org.scalablytyped.converter.internal.phases.PhaseRes
 import org.scalablytyped.converter.internal.phases.PhaseRunner
 import org.scalablytyped.converter.internal.phases.RecPhase
 import org.scalablytyped.converter.internal.scalajs.Name
+import org.scalablytyped.converter.internal.scalajs.Dep
 import org.scalablytyped.converter.internal.scalajs.Versions
 import org.scalablytyped.converter.internal.sets.SetOps
 import org.scalablytyped.converter.internal.ts.CalculateLibraryVersion.PackageJsonOnly
@@ -41,7 +42,6 @@ import scala.concurrent.duration.Duration
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import org.scalablytyped.converter.internal.scalajs.Dep
 
 class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   class Paths(base: os.Path) {
@@ -83,7 +83,8 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       organization = "org.scalablytyped",
       enableReactTreeShaking = Selection.None,
       enableLongApplyMethod = false,
-      privateWithin = None
+      privateWithin = None,
+      useDeprecatedModuleNames = false
     )
 
     case class Config(
@@ -146,9 +147,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
 
     val packageJson = Json.force[PackageJson](packageJsonPath)
 
-    val projectSource: Option[Source.FromFolder] =
+    val projectSource: Option[LibTsSource.FromFolder] =
       if (includeProject)
-        Some(Source.FromFolder(InFolder(inDir), TsIdentLibrary(inDir.last)))
+        Some(
+          LibTsSource.FromFolder(InFolder(inDir), TsIdentLibrary(inDir.last))
+        )
       else None
 
     val wantedLibs: SortedSet[TsIdentLibrary] =
@@ -172,7 +175,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       wantedLibs
     )
 
-    val sources: Vector[Source.TsLibSource] = {
+    val sources: Vector[LibTsSource] = {
       bootstrapped.initialLibs match {
         case Left(unresolved) => sys.error(unresolved.msg)
         case Right(initial)   => projectSource.foldLeft(initial)(_ :+ _)
@@ -214,8 +217,8 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       Duration.Inf
     )
 
-    val Pipeline: RecPhase[Source, PublishedSbtProject] =
-      RecPhase[Source]
+    val Pipeline: RecPhase[LibTsSource, PublishedSbtProject] =
+      RecPhase[LibTsSource]
         .next(
           new Phase1ReadTypescript(
             calculateLibraryVersion = PackageJsonOnly,
@@ -238,7 +241,8 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
             scalaVersion = Versions.Scala(scalaVersion),
             enableScalaJsDefined = conversion.enableScalaJsDefined,
             outputPkg = conversion.outputPackage,
-            flavour = conversion.flavourImpl
+            flavour = conversion.flavourImpl,
+            useDeprecatedModuleNames = false
           ),
           "scala.js"
         )
@@ -265,18 +269,24 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
           "build"
         )
 
-    val results: Map[Source, PhaseRes[Source, PublishedSbtProject]] =
+    val results: Map[LibTsSource, PhaseRes[LibTsSource, PublishedSbtProject]] =
       sources
         .map(source =>
           source -> PhaseRunner
-            .go(Pipeline, source, Nil, (_: Source) => logger.void, NoListener)
+            .go(
+              Pipeline,
+              source,
+              Nil,
+              (_: LibTsSource) => logger.void,
+              NoListener
+            )
         )
         .toMap
 
     val td = System.currentTimeMillis - t0
     logger.warn(td)
 
-    val failures: Map[Source, Either[Throwable, String]] =
+    val failures: Map[LibTsSource, Either[Throwable, String]] =
       results
         .collect { case (_, PhaseRes.Failure(errors)) => errors }
         .reduceOption(_ ++ _)
@@ -312,11 +322,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       }
       throw new Exception
     } else {
-      val allSuccesses: Map[Source, PublishedSbtProject] = {
+      val allSuccesses: Map[LibTsSource, PublishedSbtProject] = {
         def go(
-            source: Source,
+            source: LibTsSource,
             p: PublishedSbtProject
-        ): Map[Source, PublishedSbtProject] =
+        ): Map[LibTsSource, PublishedSbtProject] =
           Map(source -> p) ++ p.project.deps.flatMap { case (k, v) => go(k, v) }
 
         results
