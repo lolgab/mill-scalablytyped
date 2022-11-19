@@ -60,6 +60,10 @@ Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Fl
 
 ## Changelog
 
+### 0.1.0
+
+Update ScalablyTyped to `1.0.0-beta40`
+
 ### 0.0.7
 
 Update ScalablyTyped to `1.0.0-beta39`
