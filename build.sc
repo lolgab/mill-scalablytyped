@@ -1,6 +1,5 @@
 import mill._
 import mill.scalalib._
-import mill.scalalib.api.Util.scalaNativeBinaryVersion
 import mill.scalalib.publish._
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:`
 import mill.contrib.buildinfo.BuildInfo
@@ -12,12 +11,13 @@ import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.2.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 import os.Path
 
-val millVersions = Seq("0.10.0")
-val millBinaryVersions = millVersions.map(scalaNativeBinaryVersion)
+def millBinaryVersion(millVersion: String) = millVersion match {
+  case s"0.11.0-M$v-$_" => s"0.11.0-M$v"
+  case s"0.$m.$p"       => s"0.$m"
+}
+val millVersions = Seq("0.10.0", "0.11.0-M0-26-31d176")
+val millBinaryVersions = millVersions.map(millBinaryVersion)
 
-def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(
-  millVersion
-)
 def millVersion(binaryVersion: String) =
   millVersions.find(v => millBinaryVersion(v) == binaryVersion).get
 
@@ -80,7 +80,8 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   )
 }
 
-object itest extends Cross[itestCross]("0.10.0", "0.10.9")
+object itest
+    extends Cross[itestCross]("0.10.0", "0.10.9", "0.11.0-M0-26-31d176")
 class itestCross(millVersion: String) extends MillIntegrationTestModule {
   override def millSourcePath: Path = super.millSourcePath / os.up
   def millTestVersion = millVersion
