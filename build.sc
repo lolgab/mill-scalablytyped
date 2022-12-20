@@ -13,10 +13,13 @@ import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion match {
   case s"0.11.0-M$v-$_" => s"0.11.0-M$v"
+  case s"0.11.0-M$v" => s"0.11.0-M$v"
   case s"0.$m.$p"       => s"0.$m"
 }
-val millVersions = Seq("0.10.0", "0.11.0-M0-26-31d176")
+val millVersions = Seq("0.10.0", "0.11.0-M1")
 val millBinaryVersions = millVersions.map(millBinaryVersion)
+
+val scala212 = "2.12.16"
 
 def millVersion(binaryVersion: String) =
   millVersions.find(v => millBinaryVersion(v) == binaryVersion).get
@@ -58,7 +61,8 @@ class MillScalablyTypedCross(millBinaryVersion: String)
   def ivyDeps = super.ivyDeps() ++ Agg()
 
   def buildInfoMembers = Map(
-    "publishVersion" -> publishVersion()
+    "publishVersion" -> publishVersion(),
+    "scala212Version" -> scala212
   )
   def buildInfoObjectName = "ScalablyTypedBuildInfo"
   def buildInfoPackageName = Some("com.github.lolgab.mill.scalablytyped")
@@ -73,7 +77,7 @@ object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
 
 object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
-  def scalaVersion = "2.12.16"
+  def scalaVersion = scala212
   def ivyDeps = Agg(
     ivy"org.scalablytyped.converter::importer:1.0.0-beta40",
     ivy"org.apache.logging.log4j:log4j-core:2.17.2"
@@ -81,7 +85,7 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
 }
 
 object itest
-    extends Cross[itestCross]("0.10.0", "0.10.9", "0.11.0-M0-26-31d176")
+    extends Cross[itestCross]("0.10.0", "0.10.9", "0.11.0-M1")
 class itestCross(millVersion: String) extends MillIntegrationTestModule {
   override def millSourcePath: Path = super.millSourcePath / os.up
   def millTestVersion = millVersion
