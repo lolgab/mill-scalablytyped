@@ -13,7 +13,7 @@ import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion match {
   case s"0.11.0-M$v-$_" => s"0.11.0-M$v"
-  case s"0.11.0-M$v" => s"0.11.0-M$v"
+  case s"0.11.0-M$v"    => s"0.11.0-M$v"
   case s"0.$m.$p"       => s"0.$m"
 }
 val millVersions = Seq("0.10.0", "0.11.0-M2")
@@ -49,7 +49,9 @@ class MillScalablyTypedCross(millBinaryVersion: String)
   override def artifactName = s"mill-scalablytyped_mill$millBinaryVersion"
 
   override def sources = T.sources(
-    super.sources() ++ Seq(millSourcePath / s"src-mill$millBinaryVersion")
+    super.sources() ++ Seq(
+      millSourcePath / s"src-mill${millVersion(millBinaryVersion).split('.').take(2).mkString(".")}"
+    )
       .map(PathRef(_))
   )
   def scalaVersion = "2.13.10"
