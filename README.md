@@ -9,7 +9,7 @@ You need to create a `scalablytyped.sc` file like:
 
 ```scala
 import mill._, mill.scalalib._, mill.scalajslib._
-import $ivy.`com.github.lolgab::mill-scalablytyped::0.1.2`
+import $ivy.`com.github.lolgab::mill-scalablytyped::0.1.4`
 import com.github.lolgab.mill.scalablytyped._
 
 object `scalablytyped-module` extends ScalaJSModule with ScalablyTyped {
@@ -59,6 +59,14 @@ The React flavour used by ScalablyTyped
 Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Flavour.ScalajsReact` 
 
 ## Changelog
+
+### 0.1.4
+
+Update ScalablyTyped to `1.0.0-beta41` and Mill `0.11` to `0.11.0-M2`
+
+### 0.1.3
+
+Update Mill `0.11.0-M1` to `0.11.0-M1-29-8f872d`
 
 ### 0.1.2
 
