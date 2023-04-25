@@ -3,7 +3,7 @@ import mill._
 import mill.scalalib._
 import mill.scalajslib._
 import mill.scalajslib.api.ModuleKind
-import $exec.plugins
+import $file.plugins
 import com.github.lolgab.mill.scalablytyped._
 import $ivy.`com.lihaoyi::utest:0.7.10`
 import utest._
