@@ -51,7 +51,24 @@ Defaults to the project root directory (the directory of `build.sc`).
 
 ### scalablyTypedIgnoredLibs
 
-The typescript dependencies to ignore during the conversion
+The typescript dependencies to ignore during the conversion.
+
+**For Instance**: say you are using [bootstrap](https://getbootstrap.com/docs/5.3/getting-started/vite/) with [ScalaCSS](https://japgolly.github.io/scalacss/book/features/extern.html). You most likely want to limit it's use to your static js/html and not want a ScalaJS facade. The example below shows how you can use `scalablyTypedIgnoredLibs` to setup the ignore list.
+
+```scala
+object `scalablytyped-module` extends ScalaJSModule with ScalablyTyped {
+  def scalaVersion = "3.2.2"
+  def scalaJSVersion = "1.13.0"
+
+  // bootstrap, @popper/core and sass are used for pure css work
+  // with no ScalaJS level usage 
+  // (just using the bs names as strings via ScalaCSS cls names)
+  override def scalablyTypedIgnoredLibs = Seq(
+        "bootstrap", 
+        "@popperjs/core", 
+        "sass")
+}
+```
 
 ### scalablyTypedFlavour
 
