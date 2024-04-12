@@ -23,6 +23,10 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
     */
   def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
 
+  /** When true (which is the default) uses scala-js-dom types when possible instead of types we translate from typescript in std
+   */
+  def useScalaJsDomTypes: T[Boolean] = T { true }
+
   /** ScalablyTyped flavours so far enables rich interop with react.
     */
   def scalablyTypedFlavour: T[Flavour] = T {
@@ -52,6 +56,7 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
       scalaVersion(),
       scalaJSVersion(),
       scalablyTypedIgnoredLibs().toArray,
+      useScalaJsDomTypes(),
       flavour
     )
     deps.map { dep =>
