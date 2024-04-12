@@ -53,6 +53,10 @@ Defaults to the project root directory (the directory of `build.sc`).
 
 The typescript dependencies to ignore during the conversion
 
+### useScalaJsDomTypes
+
+When true (which is the default) uses scala-js-dom types when possible instead of types we translate from typescript in std
+
 ### scalablyTypedFlavour
 
 The React flavour used by ScalablyTyped

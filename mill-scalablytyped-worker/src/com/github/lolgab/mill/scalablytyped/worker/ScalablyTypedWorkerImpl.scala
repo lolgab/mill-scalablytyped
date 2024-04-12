@@ -65,11 +65,12 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       scalaVersion: String,
       scalaJSVersion: String,
       ignoredLibs: Array[String],
+      useScalaJsDomTypes: Boolean,
       flavour: ScalablyTypedWorkerFlavour
   ): Array[ScalablyTypedWorkerDep] = {
 
     val DefaultOptions = ConversionOptions(
-      useScalaJsDomTypes = true,
+      useScalaJsDomTypes = useScalaJsDomTypes,
       outputPackage = Name.typings,
       enableScalaJsDefined = Selection.All,
       flavour = toScalablyTyped(flavour),
