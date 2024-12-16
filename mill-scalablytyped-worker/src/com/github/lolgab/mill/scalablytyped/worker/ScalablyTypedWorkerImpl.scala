@@ -66,6 +66,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       scalaJSVersion: String,
       ignoredLibs: Array[String],
       useScalaJsDomTypes: Boolean,
+      includeDev: Boolean,
       flavour: ScalablyTypedWorkerFlavour
   ): Array[ScalablyTypedWorkerDep] = {
 
@@ -88,25 +89,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       useDeprecatedModuleNames = false
     )
 
-    case class Config(
-        conversion: ConversionOptions,
-        wantedLibs: SortedSet[TsIdentLibrary],
-        inDirectory: os.Path,
-        includeDev: Boolean,
-        includeProject: Boolean
-    ) {
-      lazy val paths = new Paths(inDirectory)
-      def mapConversion(f: ConversionOptions => ConversionOptions) =
-        copy(conversion = f(conversion))
-    }
-
-    val DefaultConfig = Config(
-      DefaultOptions,
-      wantedLibs = SortedSet(),
-      inDirectory = os.Path(basePath),
-      includeDev = false,
-      includeProject = false
-    )
+    val inDir = os.Path(basePath)
+    val libsFromCmdLine = SortedSet.empty[TsIdentLibrary]
+    val paths = new Paths(inDir)
+    val conversion = DefaultOptions
+    val includeProject = false
 
     val parseCachePath = Some(
       files.existing(constants.defaultCacheFolder / "parse").toNIO
@@ -125,20 +112,10 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       Str.join(massaged)
     }
 
-    val c: Config = DefaultConfig
-
-    val Config(
-      conversion,
-      libsFromCmdLine,
-      inDir,
-      includeDev,
-      includeProject
-    ) = c
-
-    val packageJsonPath = c.paths.packageJson.getOrElse(
+    val packageJsonPath = paths.packageJson.getOrElse(
       sys.error(s"$inDir does not contain package.json")
     )
-    val nodeModulesPath = c.paths.node_modules.getOrElse(
+    val nodeModulesPath = paths.node_modules.getOrElse(
       sys.error(s"$inDir does not contain node_modules")
     )
     require(
