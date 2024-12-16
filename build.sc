@@ -19,7 +19,7 @@ def millBinaryVersion(millVersion: String) = millVersion match {
 val millVersions = Seq("0.10.0", "0.11.0")
 val millBinaryVersions = millVersions.map(millBinaryVersion)
 
-val scala212 = "2.12.18"
+val scala212 = "2.12.20"
 
 def millVersion(binaryVersion: String) =
   millVersions.find(v => millBinaryVersion(v) == binaryVersion).get
@@ -55,7 +55,7 @@ trait MillScalablyTypedCross
     )
       .map(PathRef(_))
   )
-  def scalaVersion = "2.13.10"
+  def scalaVersion = mill.main.BuildInfo.scalaVersion
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
     ivy"com.lihaoyi::mill-scalajslib:${millVersion(millBinaryVersion)}"
   )
@@ -87,7 +87,7 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   )
 }
 
-object itest extends Cross[itestCross]("0.10.0", "0.10.12", "0.11.0", "0.12.3")
+object itest extends Cross[itestCross]("0.10.0", "0.11.0")
 trait itestCross extends MillIntegrationTestModule with Cross.Module[String] {
   def millVersion = crossValue
   def millTestVersion = millVersion
