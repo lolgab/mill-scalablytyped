@@ -34,6 +34,10 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
     Flavour.Normal
   }
 
+  /** Generate facades for dev dependencies as well.
+    */
+  def scalablyTypedIncludeDev: T[Boolean] = T { false }
+
   private def scalablyTypedImportTask = T {
     packageJsonSource()
     val ivyLocal = sys.props
@@ -58,6 +62,7 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
       scalaJSVersion(),
       scalablyTypedIgnoredLibs().toArray,
       useScalaJsDomTypes(),
+      scalablyTypedIncludeDev(),
       flavour
     )
     deps.map { dep =>

@@ -1,20 +1,20 @@
 import mill._
+
 import mill.scalalib._
 import mill.scalalib.publish._
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:`
 import mill.contrib.buildinfo.BuildInfo
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.6.1`
+import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import de.tobiasroeser.mill.integrationtest._
-import $ivy.`com.goyeau::mill-scalafix::0.2.11`
+import $ivy.`com.goyeau::mill-scalafix::0.4.2`
 import com.goyeau.mill.scalafix.ScalafixModule
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.2.0`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
 import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion match {
-  case s"0.11.0-M$v-$_" => s"0.11.0-M$v"
-  case s"0.11.0-M$v"    => s"0.11.0-M$v"
-  case s"0.$m.$p"       => s"0.$m"
+  case s"0.12.$_" => s"0.11"
+  case s"0.$m.$p" => s"0.$m"
 }
 val millVersions = Seq("0.10.0", "0.11.0")
 val millBinaryVersions = millVersions.map(millBinaryVersion)
@@ -39,13 +39,14 @@ trait CommonPublish extends PublishModule {
 }
 
 object `mill-scalablytyped`
-    extends Cross[MillScalablyTypedCross](millBinaryVersions: _*)
-class MillScalablyTypedCross(millBinaryVersion: String)
+    extends Cross[MillScalablyTypedCross](millBinaryVersions)
+trait MillScalablyTypedCross
     extends ScalaModule
     with CommonPublish
     with BuildInfo
-    with ScalafixModule {
-  override def millSourcePath = super.millSourcePath / os.up
+    with ScalafixModule
+    with Cross.Module[String] {
+  def millBinaryVersion: String = crossValue
   override def artifactName = s"mill-scalablytyped_mill$millBinaryVersion"
 
   override def sources = T.sources(
@@ -62,12 +63,12 @@ class MillScalablyTypedCross(millBinaryVersion: String)
 
   def ivyDeps = super.ivyDeps() ++ Agg()
 
-  def buildInfoMembers = Map(
-    "publishVersion" -> publishVersion(),
-    "scala212Version" -> scala212
+  def buildInfoMembers = Seq(
+    BuildInfo.Value("publishVersion", publishVersion()),
+    BuildInfo.Value("scala212Version", scala212)
   )
   def buildInfoObjectName = "ScalablyTypedBuildInfo"
-  def buildInfoPackageName = Some("com.github.lolgab.mill.scalablytyped")
+  def buildInfoPackageName = "com.github.lolgab.mill.scalablytyped"
 
   def scalacOptions =
     super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation")
@@ -86,10 +87,9 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   )
 }
 
-object itest
-    extends Cross[itestCross]("0.10.0", "0.10.12", "0.11.0")
-class itestCross(millVersion: String) extends MillIntegrationTestModule {
-  override def millSourcePath: Path = super.millSourcePath / os.up
+object itest extends Cross[itestCross]("0.10.0", "0.10.12", "0.11.0", "0.12.3")
+trait itestCross extends MillIntegrationTestModule with Cross.Module[String] {
+  def millVersion = crossValue
   def millTestVersion = millVersion
   def pluginsUnderTest = Seq(
     `mill-scalablytyped`(millBinaryVersion(millVersion))
