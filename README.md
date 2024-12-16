@@ -62,7 +62,23 @@ When true (which is the default) uses scala-js-dom types when possible instead o
 The React flavour used by ScalablyTyped
 Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Flavour.ScalajsReact` 
 
+### scalablyTypedIncludeDev
+
+If `true` generate facades for dev dependencies as well. Default: `false`
+
 ## Changelog
+
+### 0.1.15
+
+Add support for `scalablyTypedIncludeDev`
+
+### 0.1.14
+
+Add support for `useScalaJsDomTypes`
+
+### 0.1.13
+
+Update ScalablyTyped to `1.0.0-beta44`
 
 ### 0.1.12
 
