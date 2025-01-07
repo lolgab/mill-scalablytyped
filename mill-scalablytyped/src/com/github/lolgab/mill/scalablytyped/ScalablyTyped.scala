@@ -40,8 +40,8 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
 
   private def scalablyTypedImportTask = T {
     packageJsonSource()
-    val ivyLocal = sys.props
-      .get("ivy.home")
+    val ivyLocal = sys.env
+      .get("IVY_HOME")
       .map(os.Path(_))
       .getOrElse(os.home / ".ivy2") / "local"
 
