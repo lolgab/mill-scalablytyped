@@ -4,7 +4,42 @@ Mill Plugin for [Scalablytyped](https://scalablytyped.org)
 
 ## Getting Started
 
-The preferred way is to create a module in a separate build file.
+The preferred way is to create a separate module for the scalablytyped generated
+code, and then add it to your application's `moduleDeps`:
+
+```scala
+// build.mill
+package build
+
+import mill._, mill.scalalib._, mill.scalajslib._
+import $ivy.`com.github.lolgab::mill-scalablytyped::0.1.15`
+import com.github.lolgab.mill.scalablytyped._
+
+trait Base extends ScalaJSModule {
+  def scalaVersion = "3.3.4"
+  def scalaJSVersion = "1.17.0"
+}
+
+object `scalablytyped-module` extends Base with ScalablyTyped
+
+object app extends Base {
+  def moduleDeps = Seq(`scalablytyped-module`)
+}
+```
+
+After that it will scan the directory for a `package.json` file and a `node_module` directory.
+It will run ScalablyTyped to convert the libraries in `package.json` and then add them to `ivyDeps`.
+
+### Mill version note (Mill 0.10 or older)
+
+If you are using Mill 0.10, make sure to use a Mill version greater than `0.10.1` otherwise the changes
+to the `build.sc` file will re-trigger the Scalablytyped converter.
+Also make sure that `import $file.scalablytyped` is one of the first imports in your `build.sc`, because
+Ammonite recompiles all the next imported classes when a imported file changes. If the scalablytyped file
+is imported earlier, there are less chances of doing useless recompilations with ScalablyTyped.
+
+To avoid rerunning the scalablytyped compiler at every build file change,
+the preferred way is to create a module in a separate build file.
 You need to create a `scalablytyped.sc` file like:
 
 ```scala
@@ -30,17 +65,6 @@ object app extends ScalaJSModule {
   def moduleDeps = Seq(scalablytyped.`scalablytyped-module`)
 }
 ```
-
-After that it will scan the directory for a `package.json` file and a `node_module` directory.
-It will run ScalablyTyped to convert the libraries in `package.json` and then add them to `ivyDeps`.
-
-### Mill version note
-
-Make sure to use a Mill version greater than `0.10.1` otherwise the changes to the `build.sc` file will
-re-trigger the Scalablytyped converter.
-Also make sure that `import $file.scalablytyped` is one of the first imports in your `build.sc`, because
-Ammonite recompiles all the next imported classes when a imported file changes. If the scalablytyped file
-is imported earlier, there are less chances of doing useless recompilations with ScalablyTyped.
 
 ## Configuration
 
