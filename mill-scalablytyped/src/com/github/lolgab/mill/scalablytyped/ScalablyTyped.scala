@@ -43,7 +43,8 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
     val ivyLocal = sys.props
       .get("ivy.home")
       .map(os.Path(_))
-      .getOrElse(os.home / ".ivy2") / "local"
+      .getOrElse(sys.env.get("IVY_HOME")
+                 .getOrElse(os.home / ".ivy2")) / "local"
 
     val targetPath = T.dest / "out"
 
