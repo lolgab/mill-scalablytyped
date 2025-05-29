@@ -2,7 +2,8 @@ package com.github.lolgab.mill.scalablytyped
 
 import com.github.lolgab.mill.scalablytyped.worker.api._
 import mill._
-import mill.define.{Discover, TaskCtx}
+import mill.define.Discover
+import mill.define.TaskCtx
 
 class ScalablyTypedWorker {
   private var scalaInstanceCache = Option.empty[(Long, ScalablyTypedWorkerApi)]
