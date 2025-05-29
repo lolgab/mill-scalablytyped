@@ -5,47 +5,48 @@ import mill._
 import mill.scalajslib._
 import mill.scalalib._
 
-trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
-  private def scalablyTypedWorker = T.task {
+trait ScalablyTyped extends ScalaJSModule {
+  private def scalablyTypedWorker = Task.Anon {
     val classpath = scalablytypedWorkerClasspath()
     ScalablyTypedWorkerApi.scalablyTypedWorker().impl(classpath)
   }
 
-  private def packageJsonSource = T.source {
-    scalablyTypedBasePath() / "package.json"
+  private def packageJsonSource = Task.Source {
+    scalablyTypedBasePath / "package.json"
+    // Task.workspace / "package.json"
   }
 
   /** The base path where package.json and node_modules are.
     */
-  def scalablyTypedBasePath: T[os.Path] = T { T.workspace }
+  def scalablyTypedBasePath: os.Path = os.Path(sys.env("MILL_WORKSPACE_ROOT"))
 
   /** The TypeScript dependencies to ignore during the conversion
     */
-  def scalablyTypedIgnoredLibs: T[Seq[String]] = T { Seq.empty[String] }
+  def scalablyTypedIgnoredLibs: T[Seq[String]] = Task { Seq.empty[String] }
 
   /** When true (which is the default) uses scala-js-dom types when possible
     * instead of types we translate from typescript in std
     */
-  def useScalaJsDomTypes: T[Boolean] = T { true }
+  def useScalaJsDomTypes: T[Boolean] = Task { true }
 
   /** ScalablyTyped flavours so far enables rich interop with react.
     */
-  def scalablyTypedFlavour: T[Flavour] = T {
+  def scalablyTypedFlavour: T[Flavour] = Task {
     Flavour.Normal
   }
 
   /** Generate facades for dev dependencies as well.
     */
-  def scalablyTypedIncludeDev: T[Boolean] = T { false }
+  def scalablyTypedIncludeDev: T[Boolean] = Task { false }
 
-  private def scalablyTypedImportTask = T {
+  private def scalablyTypedImportTask = Task {
     packageJsonSource()
     val ivyLocal = sys.props
       .get("ivy.home")
       .map(os.Path(_))
       .getOrElse(os.home / ".ivy2") / "local"
 
-    val targetPath = T.dest / "out"
+    val targetPath = Task.dest / "out"
 
     val flavour = scalablyTypedFlavour() match {
       case Flavour.Normal       => ScalablyTypedWorkerFlavour.Normal
@@ -55,7 +56,7 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
     }
 
     val deps = scalablyTypedWorker().scalablytypedImport(
-      scalablyTypedBasePath().toNIO,
+      scalablyTypedBasePath.toNIO,
       ivyLocal.toNIO,
       targetPath.toNIO,
       scalaVersion(),
@@ -79,7 +80,21 @@ trait ScalablyTyped extends ScalaJSModule with VersionSpecific {
 
   }
 
-  override def ivyDeps: T[Agg[Dep]] = T {
-    super.ivyDeps() ++ scalablyTypedImportTask()
+  private def scalablytypedWorkerClasspath: T[Seq[PathRef]] =
+    Task {
+      Lib
+        .resolveDependencies(
+          repositoriesTask(),
+          Seq(
+            mvn"com.github.lolgab::mill-scalablytyped-worker:${ScalablyTypedBuildInfo.publishVersion}"
+              .exclude("com.github.lolgab" -> "mill-scalablytyped-worker-api")
+          ).map(Lib.depToBoundDep(_, ScalablyTypedBuildInfo.scala212Version)),
+          ctx = Some(Task.ctx()),
+          checkGradleModules = false
+        )
+    }
+
+  override def mvnDeps: T[Seq[Dep]] = Task {
+    super.mvnDeps() ++ scalablyTypedImportTask()
   }
 }

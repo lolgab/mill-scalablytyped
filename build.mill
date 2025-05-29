@@ -13,10 +13,9 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion match {
-  case s"0.12.$_" => s"0.11"
-  case s"0.$m.$p" => s"0.$m"
+  case "1.0.0-RC1" => "1.0.0-RC1"
 }
-val millVersions = Seq("0.10.0", "0.11.0")
+val millVersions = Seq("1.0.0-RC1")
 val millBinaryVersions = millVersions.map(millBinaryVersion)
 
 val scala212 = "2.12.20"
@@ -51,13 +50,13 @@ trait MillScalablyTypedCross
 
   override def sources = T.sources(
     super.sources() ++ Seq(
-      millSourcePath / s"src-mill${millVersion(millBinaryVersion).split('.').take(2).mkString(".")}"
+      moduleDir / s"src-mill${millVersion(millBinaryVersion).split('.').take(1).mkString(".")}"
     )
       .map(PathRef(_))
   )
-  def scalaVersion = mill.main.BuildInfo.scalaVersion
+  def scalaVersion = "3.7.0"
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalajslib:${millVersion(millBinaryVersion)}"
+    ivy"com.lihaoyi::mill-libs-scalajslib:${millVersion(millBinaryVersion)}"
   )
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
 
@@ -71,9 +70,7 @@ trait MillScalablyTypedCross
   def buildInfoPackageName = "com.github.lolgab.mill.scalablytyped"
 
   def scalacOptions =
-    super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation")
-
-  def scalafixIvyDeps = Agg(ivy"com.github.liancheng::organize-imports:0.6.0")
+    super.scalacOptions() ++ Seq("-Wunused:all", "-deprecation")
 }
 
 object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
@@ -87,7 +84,7 @@ object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   )
 }
 
-object itest extends Cross[itestCross]("0.10.0", "0.11.0")
+object itest extends Cross[itestCross]() // TODO: Port integration tests
 trait itestCross extends MillIntegrationTestModule with Cross.Module[String] {
   def millVersion = crossValue
   def millTestVersion = millVersion
@@ -98,7 +95,7 @@ trait itestCross extends MillIntegrationTestModule with Cross.Module[String] {
     `mill-scalablytyped-worker`,
     `mill-scalablytyped-worker-api`
   )
-  def testBase = millSourcePath / "src"
+  def testBase = moduleDir / "src"
   def testInvocations = T {
     Seq(
       PathRef(testBase / "simple") -> Seq(

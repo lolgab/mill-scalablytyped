@@ -3,27 +3,24 @@ package com.github.lolgab.mill.scalablytyped
 import com.github.lolgab.mill.scalablytyped.worker.api._
 import mill._
 import mill.define.Discover
-import mill.define.Worker
+import mill.define.TaskCtx
 
 class ScalablyTypedWorker {
   private var scalaInstanceCache = Option.empty[(Long, ScalablyTypedWorkerApi)]
 
   def impl(
-      scalablytypedWorkerClasspath: Agg[PathRef]
-  )(implicit ctx: mill.api.Ctx.Home): ScalablyTypedWorkerApi = {
+      scalablytypedWorkerClasspath: Seq[PathRef]
+  ): ScalablyTypedWorkerApi = {
     val classloaderSig = scalablytypedWorkerClasspath.hashCode
     scalaInstanceCache match {
       case Some((sig, bridge)) if sig == classloaderSig => bridge
       case _ =>
-        val cl = mill.api.ClassLoader.create(
-          scalablytypedWorkerClasspath.iterator
-            .map(_.path.toIO.toURI.toURL)
-            .to(Seq),
+        val cl = mill.util.Jvm.createClassLoader(
+          scalablytypedWorkerClasspath.map(_.path),
           parent = null,
           sharedLoader = getClass.getClassLoader,
           sharedPrefixes =
-            Seq("com.github.lolgab.mill.scalablytyped.worker.api."),
-          logger = None
+            Seq("com.github.lolgab.mill.scalablytyped.worker.api.")
         )
         try {
           val bridge = cl
@@ -47,7 +44,7 @@ class ScalablyTypedWorker {
 }
 
 object ScalablyTypedWorkerApi extends mill.define.ExternalModule {
-  def scalablyTypedWorker: Worker[ScalablyTypedWorker] = T.worker {
+  def scalablyTypedWorker: Worker[ScalablyTypedWorker] = Task.Worker {
     new ScalablyTypedWorker()
   }
   lazy val millDiscover = Discover[this.type]
