@@ -1,11 +1,14 @@
+//| mill-version: 1.0.0-RC1
+//| mvnDeps:
+//|   - com.github.lolgab::mill-scalablytyped_mill1.0.0-RC1:0.1.15-2-b90f65-DIRTYb2e6f910
+//|   - com.lihaoyi::utest:0.7.10
+
 import mill._
 
 import mill.scalalib._
 import mill.scalajslib._
 import mill.scalajslib.api.ModuleKind
-import $file.plugins
 import com.github.lolgab.mill.scalablytyped._
-import $ivy.`com.lihaoyi::utest:0.7.10`
 import utest._
 
 object module extends ScalaJSModule with ScalablyTyped {
@@ -14,17 +17,17 @@ object module extends ScalaJSModule with ScalablyTyped {
   def moduleKind = ModuleKind.CommonJSModule
 }
 
-def prepare() = T.command {
+def prepare() = Task.Command {
   os.proc("npm", "install").call()
   ()
 }
 
-def verify() = T.command {
+def verify() = Task.Command {
   val lines = Seq.newBuilder[String]
   val processOutput = os.ProcessOutput.Readlines(lines += _)
 
-  val js = module.fastOpt()
-  os.proc("node", js.path).call(stdout = processOutput)
+  val js = module.fastLinkJS()
+  os.proc("node", js.dest.path / "main.js").call(stdout = processOutput)
   val out = lines.result().mkString("\n").trim()
   assert(out == "[ [ 1, 3 ], [ 2, 4 ] ]")
   ()
