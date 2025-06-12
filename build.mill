@@ -13,9 +13,9 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion match {
-  case "1.0.0-RC1" => "1.0.0-RC1"
+  case "1.0.0-RC2" => "1.0.0-RC2"
 }
-val millVersions = Seq("1.0.0-RC1")
+val millVersions = Seq("1.0.0-RC2")
 val millBinaryVersions = millVersions.map(millBinaryVersion)
 
 val scala212 = "2.12.20"
