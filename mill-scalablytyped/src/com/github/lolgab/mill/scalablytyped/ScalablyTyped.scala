@@ -35,6 +35,10 @@ trait ScalablyTyped extends ScalaJSModule {
     Flavour.Normal
   }
 
+  /** The output package name.
+    */
+  def outputPackage: T[String] = Task { "" }
+
   /** Generate facades for dev dependencies as well.
     */
   def scalablyTypedIncludeDev: T[Boolean] = Task { false }
@@ -64,7 +68,8 @@ trait ScalablyTyped extends ScalaJSModule {
       scalablyTypedIgnoredLibs().toArray,
       useScalaJsDomTypes(),
       scalablyTypedIncludeDev(),
-      flavour
+      flavour,
+      outputPackage()
     )
     deps.map { dep =>
       Dep
