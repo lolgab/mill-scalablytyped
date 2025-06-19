@@ -90,6 +90,10 @@ Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Fl
 
 If `true` generate facades for dev dependencies as well. Default: `false`
 
+### scalablyTypedOutputPackage
+
+Adjusts the top-level package name of the generated code.
+
 ## Changelog
 
 ### 0.1.15

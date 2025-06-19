@@ -67,12 +67,13 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       ignoredLibs: Array[String],
       useScalaJsDomTypes: Boolean,
       includeDev: Boolean,
-      flavour: ScalablyTypedWorkerFlavour
+      flavour: ScalablyTypedWorkerFlavour,
+      outputPackage: String
   ): Array[ScalablyTypedWorkerDep] = {
 
     val DefaultOptions = ConversionOptions(
       useScalaJsDomTypes = useScalaJsDomTypes,
-      outputPackage = Name.typings,
+      outputPackage = Name(outputPackage),
       enableScalaJsDefined = Selection.All,
       flavour = toScalablyTyped(flavour),
       ignored = SortedSet("typescript") ++ ignoredLibs,
@@ -335,4 +336,6 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
 
     }
   }
+
+  override def defaultOutputPackage(): String = Name.typings.unescaped
 }
