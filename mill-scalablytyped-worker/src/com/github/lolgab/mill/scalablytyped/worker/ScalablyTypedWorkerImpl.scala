@@ -73,10 +73,8 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
 
     val DefaultOptions = ConversionOptions(
       useScalaJsDomTypes = useScalaJsDomTypes,
-      outputPackage = Some(outputPackage)
-        .filter(_.nonEmpty)
-        .map(Name(_))
-        .getOrElse(Name.typings),
+      outputPackage =
+        if (outputPackage.isEmpty) Name.typings else Name(outputPackage),
       enableScalaJsDefined = Selection.All,
       flavour = toScalablyTyped(flavour),
       ignored = SortedSet("typescript") ++ ignoredLibs,
