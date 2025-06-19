@@ -37,7 +37,9 @@ trait ScalablyTyped extends ScalaJSModule {
 
   /** The top-level package to put generated code in.
     */
-  def scalablyTypedOutputPackage: T[String] = Task { "" }
+  def scalablyTypedOutputPackage: T[String] = Task {
+    scalablyTypedWorker().defaultOutputPackage()
+  }
 
   /** Generate facades for dev dependencies as well.
     */
