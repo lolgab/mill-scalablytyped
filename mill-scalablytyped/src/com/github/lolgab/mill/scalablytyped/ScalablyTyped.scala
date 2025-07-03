@@ -2,6 +2,7 @@ package com.github.lolgab.mill.scalablytyped
 
 import com.github.lolgab.mill.scalablytyped.worker.api.ScalablyTypedWorkerFlavour
 import mill._
+import mill.api.CrossVersion
 import mill.scalajslib._
 import mill.scalalib._
 

@@ -2,8 +2,8 @@ package com.github.lolgab.mill.scalablytyped
 
 import com.github.lolgab.mill.scalablytyped.worker.api._
 import mill._
-import mill.define.Discover
-import mill.define.TaskCtx
+import mill.api.Discover
+import mill.api.TaskCtx
 
 class ScalablyTypedWorker {
   private var scalaInstanceCache = Option.empty[(Long, ScalablyTypedWorkerApi)]
@@ -43,7 +43,7 @@ class ScalablyTypedWorker {
   }
 }
 
-object ScalablyTypedWorkerApi extends mill.define.ExternalModule {
+object ScalablyTypedWorkerApi extends mill.api.ExternalModule {
   def scalablyTypedWorker: Worker[ScalablyTypedWorker] = Task.Worker {
     new ScalablyTypedWorker()
   }
