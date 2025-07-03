@@ -1,6 +1,6 @@
-//| mill-version: 1.0.0-RC2
+//| mill-version: 1.0.0-RC3
 //| mvnDeps:
-//|   - com.github.lolgab::mill-scalablytyped_mill1.0.0-RC2:0.1.15-2-b90f65-DIRTYb2e6f910
+//|   - com.github.lolgab::mill-scalablytyped_mill1.0.0-RC3:0.1.15-2-b90f65-DIRTYb2e6f910
 //|   - com.lihaoyi::utest:0.7.10
 
 import mill._
