@@ -12,14 +12,18 @@ trait ScalablyTyped extends ScalaJSModule {
     ScalablyTypedWorkerApi.scalablyTypedWorker().impl(classpath)
   }
 
-  private def packageJsonSource = Task.Source {
-    scalablyTypedBasePath / "package.json"
-    // Task.workspace / "package.json"
+  private def packageJsonSource = Task.Anon {
+    Task.Source {
+      scalablyTypedBasePath() / "package.json"
+      // Task.workspace / "package.json"
+    }
   }
 
   /** The base path where package.json and node_modules are.
     */
-  def scalablyTypedBasePath: os.Path = os.Path(sys.env("MILL_WORKSPACE_ROOT"))
+  def scalablyTypedBasePath: T[os.Path] = Task {
+    os.Path(sys.env("MILL_WORKSPACE_ROOT"))
+  }
 
   /** The TypeScript dependencies to ignore during the conversion
     */
@@ -62,18 +66,22 @@ trait ScalablyTyped extends ScalaJSModule {
       case Flavour.ScalajsReact => ScalablyTypedWorkerFlavour.ScalajsReact
     }
 
-    val deps = scalablyTypedWorker().scalablytypedImport(
-      scalablyTypedBasePath.toNIO,
-      ivyLocal.toNIO,
-      targetPath.toNIO,
-      scalaVersion(),
-      scalaJSVersion(),
-      scalablyTypedIgnoredLibs().toArray,
-      useScalaJsDomTypes(),
-      scalablyTypedIncludeDev(),
-      flavour,
-      scalablyTypedOutputPackage()
-    )
+    val basePath = scalablyTypedBasePath()
+
+    val deps =
+      scalablyTypedWorker().scalablytypedImport(
+        basePath.toNIO,
+        ivyLocal.toNIO,
+        targetPath.toNIO,
+        scalaVersion(),
+        scalaJSVersion(),
+        scalablyTypedIgnoredLibs().toArray,
+        useScalaJsDomTypes(),
+        scalablyTypedIncludeDev(),
+        flavour,
+        scalablyTypedOutputPackage()
+      )
+
     deps.map { dep =>
       Dep
         .apply(
