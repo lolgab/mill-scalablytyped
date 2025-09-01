@@ -14,16 +14,16 @@ trait ScalablyTyped extends ScalaJSModule {
 
   private def packageJsonSource = Task.Anon {
     Task.Source {
-      scalablyTypedBasePath() / "package.json"
+      scalablyTypedBasePathTask() / "package.json"
       // Task.workspace / "package.json"
     }
   }
 
   /** The base path where package.json and node_modules are.
     */
-  def scalablyTypedBasePath: T[os.Path] = Task {
-    os.Path(sys.env("MILL_WORKSPACE_ROOT"))
-  }
+  def scalablyTypedBasePath: os.Path = mill.api.BuildCtx.workspaceRoot
+
+  def scalablyTypedBasePathTask: T[os.Path] = Task.Input { scalablyTypedBasePath }
 
   /** The TypeScript dependencies to ignore during the conversion
     */
@@ -66,7 +66,7 @@ trait ScalablyTyped extends ScalaJSModule {
       case Flavour.ScalajsReact => ScalablyTypedWorkerFlavour.ScalajsReact
     }
 
-    val basePath = scalablyTypedBasePath()
+    val basePath = scalablyTypedBasePathTask()
 
     val deps =
       scalablyTypedWorker().scalablytypedImport(
