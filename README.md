@@ -35,7 +35,13 @@ It will run ScalablyTyped to convert the libraries in `package.json` and then ad
 ### scalablyTypedBasePath
 
 The base path where package.json and node_modules are.
+When overriding you need to override also `scalablyTypedPackageJson` accordingly.
+
+### scalablyTypedPackageJson
+
+The base path where package.json and node_modules are.
 Defaults to the project root directory (the directory of `build.mill`).
+When overriding you need to override also `scalablyTypedBasePath` accordingly.
 
 ### scalablyTypedIgnoredLibs
 
