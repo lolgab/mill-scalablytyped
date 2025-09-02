@@ -66,6 +66,15 @@ Adjusts the top-level package name of the generated code.
 
 ## Changelog
 
+### 0.3.0
+
+Introduce `scalablyTypedPackageJson` that matches `scalablyTypedBasePath / "package.json"`
+
+Change `scalablyTypedBasePath` to `Task[os.Path]`.
+
+When you override `scalablyTypedBasePath` you need to also manually
+override `scalablyTypedPackageJson` to match the same base path.
+
 ### 0.2.0
 
 Update Mill to version 1
