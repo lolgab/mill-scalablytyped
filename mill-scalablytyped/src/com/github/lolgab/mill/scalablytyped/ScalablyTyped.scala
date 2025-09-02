@@ -12,14 +12,19 @@ trait ScalablyTyped extends ScalaJSModule {
     ScalablyTypedWorkerApi.scalablyTypedWorker().impl(classpath)
   }
 
-  private def packageJsonSource = Task.Source {
-    scalablyTypedBasePath / "package.json"
-    // Task.workspace / "package.json"
+  /** The path of package.json. When overriding you need to override also
+    * `scalablyTypedBasePath` accordingly.
+    */
+  def scalablyTypedPackageJson: T[PathRef] = Task.Source {
+    mill.api.BuildCtx.workspaceRoot / "package.json"
   }
 
-  /** The base path where package.json and node_modules are.
+  /** The base path where package.json and node_modules are. When overriding you
+    * need to override also `scalablyTypedPackageJson` accordingly.
     */
-  def scalablyTypedBasePath: os.Path = os.Path(sys.env("MILL_WORKSPACE_ROOT"))
+  def scalablyTypedBasePath: T[os.Path] = Task {
+    mill.api.BuildCtx.workspaceRoot
+  }
 
   /** The TypeScript dependencies to ignore during the conversion
     */
@@ -47,7 +52,7 @@ trait ScalablyTyped extends ScalaJSModule {
   def scalablyTypedIncludeDev: T[Boolean] = Task { false }
 
   private def scalablyTypedImportTask = Task {
-    packageJsonSource()
+    scalablyTypedPackageJson()
     val ivyLocal = sys.props
       .get("ivy.home")
       .map(os.Path(_))
@@ -62,18 +67,22 @@ trait ScalablyTyped extends ScalaJSModule {
       case Flavour.ScalajsReact => ScalablyTypedWorkerFlavour.ScalajsReact
     }
 
-    val deps = scalablyTypedWorker().scalablytypedImport(
-      scalablyTypedBasePath.toNIO,
-      ivyLocal.toNIO,
-      targetPath.toNIO,
-      scalaVersion(),
-      scalaJSVersion(),
-      scalablyTypedIgnoredLibs().toArray,
-      useScalaJsDomTypes(),
-      scalablyTypedIncludeDev(),
-      flavour,
-      scalablyTypedOutputPackage()
-    )
+    val basePath = scalablyTypedBasePath()
+
+    val deps =
+      scalablyTypedWorker().scalablytypedImport(
+        basePath.toNIO,
+        ivyLocal.toNIO,
+        targetPath.toNIO,
+        scalaVersion(),
+        scalaJSVersion(),
+        scalablyTypedIgnoredLibs().toArray,
+        useScalaJsDomTypes(),
+        scalablyTypedIncludeDev(),
+        flavour,
+        scalablyTypedOutputPackage()
+      )
+
     deps.map { dep =>
       Dep
         .apply(
