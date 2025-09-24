@@ -1,6 +1,6 @@
-//| mill-version: 1.0.0-RC3
+//| mill-version: 1.0.5
 //| mvnDeps:
-//|   - com.github.lolgab::mill-scalablytyped_mill1.0.0-RC3:0.1.15-2-b90f65-DIRTYb2e6f910
+//|   - com.github.lolgab::mill-scalablytyped::0.3.0-1-614d93-DIRTY30a164a1
 //|   - com.lihaoyi::utest:0.7.10
 
 import mill._
@@ -12,8 +12,8 @@ import com.github.lolgab.mill.scalablytyped._
 import utest._
 
 object module extends ScalaJSModule with ScalablyTyped {
-  def scalaVersion = "3.1.0"
-  def scalaJSVersion = "1.8.0"
+  def scalaVersion = "3.7.3"
+  def scalaJSVersion = "1.20.1"
   def moduleKind = ModuleKind.CommonJSModule
 }
 
