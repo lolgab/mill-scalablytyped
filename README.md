@@ -8,16 +8,17 @@ The preferred way is to create a separate module for the scalablytyped generated
 code, and then add it to your application's `moduleDeps`:
 
 ```scala
-//| mill-version: 1.0.3
+//| mill-version: 1.0.5
+//| mvnDeps:
+//|   - com.github.lolgab::mill-scalablytyped::0.3.1
 package build
 
 import mill.*, mill.scalalib.*, mill.scalajslib.*
-import $ivy.`com.github.lolgab::mill-scalablytyped::0.2.0`
 import com.github.lolgab.mill.scalablytyped.*
 
 trait Base extends ScalaJSModule {
-  def scalaVersion = "3.7.2"
-  def scalaJSVersion = "1.19.0"
+  def scalaVersion = "3.7.3"
+  def scalaJSVersion = "1.20.1"
 }
 
 object `scalablytyped-module` extends Base with ScalablyTyped
