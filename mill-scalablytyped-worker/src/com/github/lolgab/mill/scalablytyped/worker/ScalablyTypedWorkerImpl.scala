@@ -79,9 +79,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       ignored = SortedSet("typescript") ++ ignoredLibs,
       stdLibs = SortedSet("es6"),
       expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,
-      versions = Versions(
-        Versions.Scala(scalaVersion),
-        Versions.ScalaJs(scalaJSVersion)
+      versions = new MyVersions(
+        Versions(
+          Versions.Scala(scalaVersion),
+          Versions.ScalaJs(scalaJSVersion)
+        )
       ),
       organization = "org.scalablytyped",
       enableReactTreeShaking = Selection.None,
@@ -217,7 +219,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
         .next(
           new Phase2ToScalaJs(
             pedantic = false,
-            scalaVersion = Versions.Scala(scalaVersion),
+            scalaVersion = conversion.versions.scala,
             enableScalaJsDefined = conversion.enableScalaJsDefined,
             outputPkg = conversion.outputPackage,
             flavour = conversion.flavourImpl,
@@ -338,4 +340,11 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   }
 
   override def defaultOutputPackage(): String = Name.typings.unescaped
+}
+
+private class MyVersions(underlying: Versions)
+    extends Versions(underlying.scala, underlying.scalaJs) {
+  override val scalacOptions: List[String] = {
+    underlying.scalacOptions.filterNot(_ == "-source:future")
+  }
 }
