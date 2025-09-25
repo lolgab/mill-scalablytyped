@@ -85,8 +85,8 @@ trait ScalablyTyped extends ScalaJSModule {
     val targetPath = Task.dest / "src"
 
     val flavour = scalablyTypedFlavour() match {
-      case Flavour.Normal       => ScalablyTypedWorkerFlavour.Normal
-      case Flavour.Slinky       => ScalablyTypedWorkerFlavour.Slinky
+      case Flavour.Normal => ScalablyTypedWorkerFlavour.Normal
+      case Flavour.Slinky => ScalablyTypedWorkerFlavour.Slinky
       case Flavour.SlinkyNative => ScalablyTypedWorkerFlavour.SlinkyNative
       case Flavour.ScalajsReact => ScalablyTypedWorkerFlavour.ScalajsReact
     }

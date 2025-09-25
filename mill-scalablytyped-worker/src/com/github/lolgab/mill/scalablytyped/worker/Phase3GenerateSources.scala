@@ -27,10 +27,14 @@ case class GenerateSourcesResult(
 )
 object GenerateSourcesResult {
   object Unpack {
-    def unapply(m: SortedMap[LibTsSource, GenerateSourcesResult]): Some[SortedMap[LibTsSource, GenerateSourcesResult]] =
+    def unapply(
+        m: SortedMap[LibTsSource, GenerateSourcesResult]
+    ): Some[SortedMap[LibTsSource, GenerateSourcesResult]] =
       Some(apply(m))
 
-    def apply(m: SortedMap[LibTsSource, GenerateSourcesResult]): SortedMap[LibTsSource, GenerateSourcesResult] = {
+    def apply(
+        m: SortedMap[LibTsSource, GenerateSourcesResult]
+    ): SortedMap[LibTsSource, GenerateSourcesResult] = {
       val b = SortedMap.newBuilder[LibTsSource, GenerateSourcesResult]
 
       def go(tuple: (LibTsSource, GenerateSourcesResult)): Unit = {

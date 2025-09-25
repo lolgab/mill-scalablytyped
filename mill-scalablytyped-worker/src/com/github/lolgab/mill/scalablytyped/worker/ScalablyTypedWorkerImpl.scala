@@ -52,9 +52,9 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   }
 
   def toScalablyTyped(flavour: ScalablyTypedWorkerFlavour) = flavour match {
-    case ScalablyTypedWorkerFlavour.Normal       => Flavour.Normal
+    case ScalablyTypedWorkerFlavour.Normal => Flavour.Normal
     case ScalablyTypedWorkerFlavour.ScalajsReact => Flavour.ScalajsReact
-    case ScalablyTypedWorkerFlavour.Slinky       => Flavour.Slinky
+    case ScalablyTypedWorkerFlavour.Slinky => Flavour.Slinky
     case ScalablyTypedWorkerFlavour.SlinkyNative => Flavour.SlinkyNative
   }
 
@@ -144,7 +144,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
     val sources: Vector[LibTsSource] = {
       bootstrapped.initialLibs match {
         case Left(unresolved) => sys.error(unresolved.msg)
-        case Right(initial)   => projectSource.foldLeft(initial)(_ :+ _)
+        case Right(initial) => projectSource.foldLeft(initial)(_ :+ _)
       }
     }
 
