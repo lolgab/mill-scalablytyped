@@ -2,7 +2,6 @@ package com.github.lolgab.mill.scalablytyped
 
 import com.github.lolgab.mill.scalablytyped.worker.api.ScalablyTypedWorkerFlavour
 import mill._
-import mill.api.CrossVersion
 import mill.scalajslib._
 import mill.scalalib._
 
@@ -33,7 +32,9 @@ trait ScalablyTyped extends ScalaJSModule {
   /** When true (which is the default) uses scala-js-dom types when possible
     * instead of types we translate from typescript in std
     */
-  def useScalaJsDomTypes: T[Boolean] = Task { true }
+  def scalablyTypedUseScalaJsDomTypes: T[Boolean] = Task {
+    true
+  }
 
   /** ScalablyTyped flavours so far enables rich interop with react.
     */
@@ -58,7 +59,7 @@ trait ScalablyTyped extends ScalaJSModule {
       .map(os.Path(_))
       .getOrElse(os.home / ".ivy2") / "local"
 
-    val targetPath = Task.dest / "out"
+    val targetPath = Task.dest / "src"
 
     val flavour = scalablyTypedFlavour() match {
       case Flavour.Normal       => ScalablyTypedWorkerFlavour.Normal
@@ -69,32 +70,25 @@ trait ScalablyTyped extends ScalaJSModule {
 
     val basePath = scalablyTypedBasePath()
 
-    val deps =
-      scalablyTypedWorker().scalablytypedImport(
+    scalablyTypedWorker()
+      .scalablytypedImport(
         basePath.toNIO,
         ivyLocal.toNIO,
-        targetPath.toNIO,
         scalaVersion(),
-        scalaJSVersion(),
         scalablyTypedIgnoredLibs().toArray,
-        useScalaJsDomTypes(),
+        scalablyTypedUseScalaJsDomTypes(),
         scalablyTypedIncludeDev(),
         flavour,
         scalablyTypedOutputPackage()
       )
+      .map { source =>
+        val path = targetPath / os.RelPath(source.relPath)
 
-    deps.map { dep =>
-      Dep
-        .apply(
-          org = dep.groupId,
-          name = dep.artifactId,
-          version = dep.version,
-          cross = CrossVersion.empty(
-            platformed = false // it comes already platformed
-          )
-        )
-    }
+        os.makeDir.all(path / os.up)
+        os.write(path, source.source)
 
+        PathRef(path)
+      }
   }
 
   private def scalablytypedWorkerClasspath: T[Seq[PathRef]] =
@@ -112,6 +106,26 @@ trait ScalablyTyped extends ScalaJSModule {
     }
 
   override def mvnDeps: T[Seq[Dep]] = Task {
-    super.mvnDeps() ++ scalablyTypedImportTask()
+    val scalaJsDom = mvn"org.scala-js::scalajs-dom::2.3.0"
+
+    val flavourDeps = scalablyTypedFlavour() match
+      case Flavour.Normal =>
+        if (scalablyTypedUseScalaJsDomTypes()) Seq(scalaJsDom) else Seq.empty
+      case Flavour.Slinky => Seq(mvn"me.shadaj::slinky-web::0.7.2")
+      case Flavour.SlinkyNative =>
+        Seq(
+          mvn"me.shadaj::slinky-native::0.7.2".withDottyCompat(scalaVersion()),
+          scalaJsDom
+        )
+      case Flavour.ScalajsReact =>
+        Seq(mvn"com.github.japgolly.scalajs-react::core::2.1.1")
+
+    super.mvnDeps() ++ Seq(
+      mvn"com.olvind::scalablytyped-runtime::2.4.2"
+    ) ++ flavourDeps
+  }
+
+  override def generatedSources: T[Seq[PathRef]] = {
+    super.generatedSources() ++ scalablyTypedImportTask()
   }
 }

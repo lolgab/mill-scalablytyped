@@ -10,8 +10,8 @@ import com.olvind.logging.Logger
 import fansi.Attr
 import fansi.Color
 import fansi.Str
+import org.scalablytyped.converter.internal.IArray
 import org.scalablytyped.converter.internal.importer._
-import org.scalablytyped.converter.internal.importer.build.BloopCompiler
 import org.scalablytyped.converter.internal.importer.build.PublishedSbtProject
 import org.scalablytyped.converter.internal.importer.build.SbtProject
 import org.scalablytyped.converter.internal.importer.documentation.Npmjs
@@ -61,15 +61,13 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
   override def scalablytypedImport(
       basePath: java.nio.file.Path,
       ivyHomePath: java.nio.file.Path,
-      targetPath: java.nio.file.Path,
       scalaVersion: String,
-      scalaJSVersion: String,
       ignoredLibs: Array[String],
       useScalaJsDomTypes: Boolean,
       includeDev: Boolean,
       flavour: ScalablyTypedWorkerFlavour,
       outputPackage: String
-  ): Array[ScalablyTypedWorkerDep] = {
+  ): Array[ScalablyTypedWorkerSource] = {
 
     val DefaultOptions = ConversionOptions(
       useScalaJsDomTypes = useScalaJsDomTypes,
@@ -79,11 +77,9 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       ignored = SortedSet("typescript") ++ ignoredLibs,
       stdLibs = SortedSet("es6"),
       expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,
-      versions = new MyVersions(
-        Versions(
-          Versions.Scala(scalaVersion),
-          Versions.ScalaJs(scalaJSVersion)
-        )
+      versions = Versions(
+        Versions.Scala(scalaVersion),
+        Versions.ScalaJs("unused")
       ),
       organization = "org.scalablytyped",
       enableReactTreeShaking = Selection.None,
@@ -189,16 +185,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       )
     )
 
-    val compiler = Await.result(
-      BloopCompiler(
-        logger.filter(LogLevel.debug).void,
-        conversion.versions,
-        failureCacheFolderOpt = None
-      ),
-      Duration.Inf
-    )
-
-    val Pipeline: RecPhase[LibTsSource, PublishedSbtProject] =
+    val Pipeline =
       RecPhase[LibTsSource]
         .next(
           new Phase1ReadTypescript(
@@ -235,34 +222,24 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
           conversion.flavourImpl.toString
         )
         .next(
-          new Phase3Compile(
+          new Phase3GenerateSources(
             versions = conversion.versions,
-            compiler = compiler,
-            targetFolder = os.Path(targetPath),
-            organization = conversion.organization,
-            publishLocalFolder = publishLocalFolder,
-            metadataFetcher = Npmjs.No,
-            softWrites = true,
-            flavour = conversion.flavourImpl,
-            generateScalaJsBundlerFile = false,
-            ensureSourceFilesWritten = true
+            flavour = conversion.flavourImpl
           ),
           "build"
         )
 
-    val results: Map[LibTsSource, PhaseRes[LibTsSource, PublishedSbtProject]] =
-      sources
-        .map(source =>
-          source -> PhaseRunner
-            .go(
-              Pipeline,
-              source,
-              Nil,
-              (_: LibTsSource) => logger.void,
-              NoListener
-            )
-        )
-        .toMap
+    val results =
+      sources.map { source =>
+        source -> PhaseRunner
+          .go(
+            Pipeline,
+            source,
+            Nil,
+            (_: LibTsSource) => logger.void,
+            NoListener
+          )
+      }.toMap
 
     val td = System.currentTimeMillis - t0
     logger.warn(td)
@@ -303,48 +280,33 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       }
       throw new Exception
     } else {
-      val allSuccesses: Map[LibTsSource, PublishedSbtProject] = {
+      val allSuccesses = {
         def go(
             source: LibTsSource,
-            p: PublishedSbtProject
-        ): Map[LibTsSource, PublishedSbtProject] =
-          Map(source -> p) ++ p.project.deps.flatMap { case (k, v) => go(k, v) }
+            result: GenerateSourcesResult
+        ): Map[LibTsSource, GenerateSourcesResult] =
+          Map(source -> result) ++
+            result.deps.flatMap { case (k, v) => go(k, v) }
 
         results
-          .collect { case (s, PhaseRes.Ok(res)) => go(s, res) }
-          .reduceOption(_ ++ _)
-          .getOrElse(Map.empty)
+          .flatMap {
+            case (s, PhaseRes.Ok(res)) => go(s, res)
+            case _ => Map.empty[LibTsSource, GenerateSourcesResult]
+          }
       }
-
-      val short: Seq[SbtProject] =
-        results
-          .collect { case (_, PhaseRes.Ok(res)) => res.project }
-          .toSeq
-          .filter(_.name != Name.std.unescaped)
-          .sortBy(_.name)
 
       println()
       println(
         s"Successfully converted ${allSuccesses.keys.map(x => Color.Green(x.libName.value)).mkString(", ")}"
       )
-      short.map { p =>
-        p.reference match {
-          case Dep.Mangled(mangledArtifact, dep) =>
-            new ScalablyTypedWorkerDep(dep.org, mangledArtifact, dep.version)
-          case Dep.Java(org, artifact, version) =>
-            new ScalablyTypedWorkerDep(org, artifact, version)
-        }
+      allSuccesses.values.flatMap { sources =>
+        sources.sources.map { case (relPath, source) =>
+          new ScalablyTypedWorkerSource(relPath.toString(), source)
+        }.toVector
       }.toArray
 
     }
   }
 
   override def defaultOutputPackage(): String = Name.typings.unescaped
-}
-
-private class MyVersions(underlying: Versions)
-    extends Versions(underlying.scala, underlying.scalaJs) {
-  override val scalacOptions: List[String] = {
-    underlying.scalacOptions.filterNot(_ == "-source:future")
-  }
 }

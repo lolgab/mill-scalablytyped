@@ -52,7 +52,7 @@ trait MillScalablyTypedCross
     )
       .map(PathRef(_))
   )
-  def scalaVersion = "3.7.0"
+  def scalaVersion = "3.7.3"
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
     ivy"com.lihaoyi::mill-libs-scalajslib:${millVersion(millBinaryVersion)}"
   )
@@ -75,9 +75,9 @@ object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
 
 object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
-  def scalaVersion = scala212
+  def scalaVersion = "2.12.20"
   def ivyDeps = Agg(
-    ivy"org.scalablytyped.converter::importer:1.0.0-beta44",
+    ivy"org.scalablytyped.converter::importer-portable:1.0.0-beta44",
     ivy"org.apache.logging.log4j:log4j-core:2.17.2"
   )
 }
