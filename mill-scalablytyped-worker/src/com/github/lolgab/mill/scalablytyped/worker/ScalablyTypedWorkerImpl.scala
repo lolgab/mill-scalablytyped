@@ -62,6 +62,7 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
       basePath: java.nio.file.Path,
       ivyHomePath: java.nio.file.Path,
       scalaVersion: String,
+      wanted: Array[String],
       ignoredLibs: Array[String],
       useScalaJsDomTypes: Boolean,
       includeDev: Boolean,
@@ -89,7 +90,6 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
     )
 
     val inDir = os.Path(basePath)
-    val libsFromCmdLine = SortedSet.empty[TsIdentLibrary]
     val paths = new Paths(inDir)
     val conversion = DefaultOptions
     val includeProject = false
@@ -131,20 +131,9 @@ class ScalablyTypedWorkerImpl extends ScalablyTypedWorkerApi {
         )
       else None
 
+    require(wanted.nonEmpty, s"All libraries in package.json ignored")
     val wantedLibs: SortedSet[TsIdentLibrary] =
-      libsFromCmdLine match {
-        case sets.EmptySet() =>
-          val fromPackageJson =
-            packageJson.allLibs(includeDev, peer = true).keySet
-          require(
-            fromPackageJson.nonEmpty,
-            "No libraries found in package.json"
-          )
-          val ret = fromPackageJson -- conversion.ignoredLibs
-          require(ret.nonEmpty, s"All libraries in package.json ignored")
-          ret
-        case otherwise => otherwise
-      }
+      SortedSet(wanted.map(TsIdentLibrary(_)): _*)
 
     val bootstrapped = Bootstrap.fromNodeModules(
       InFolder(nodeModulesPath),

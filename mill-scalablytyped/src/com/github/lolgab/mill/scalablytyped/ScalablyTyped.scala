@@ -18,6 +18,26 @@ trait ScalablyTyped extends ScalaJSModule {
     mill.api.BuildCtx.workspaceRoot / "package.json"
   }
 
+  /** All the libs to run ScalablyTyped on */
+  def scalablyTypedWantedLibs = Task {
+    val packageJson = scalablyTypedPackageJson()
+    val includeDev = scalablyTypedIncludeDev()
+    val includePeer = scalablyTypedIncludePeer()
+    val ignoredLibs = scalablyTypedIgnoredLibs().toSet
+
+    val json =
+      upickle.default.read[PackageJson](os.read.stream(packageJson.path))
+
+    def when(cond: Boolean)(map: collection.MapView[String, String]) =
+      if cond then map else collection.MapView.empty
+
+    val baseLibs = when(includePeer)(json.peerDependencies.view) ++
+      when(includeDev)(json.devDependencies.view) ++
+      json.dependencies.view
+
+    baseLibs.filter((key, _) => !ignoredLibs.contains(key)).toMap
+  }
+
   /** The base path where package.json and node_modules are. When overriding you
     * need to override also `scalablyTypedPackageJson` accordingly.
     */
@@ -52,8 +72,11 @@ trait ScalablyTyped extends ScalaJSModule {
     */
   def scalablyTypedIncludeDev: T[Boolean] = Task { false }
 
+  /** Generate facades for peer dependencies as well.
+    */
+  def scalablyTypedIncludePeer: T[Boolean] = Task { false }
+
   private def scalablyTypedImportTask = Task {
-    scalablyTypedPackageJson()
     val ivyLocal = sys.props
       .get("ivy.home")
       .map(os.Path(_))
@@ -75,6 +98,7 @@ trait ScalablyTyped extends ScalaJSModule {
         basePath.toNIO,
         ivyLocal.toNIO,
         scalaVersion(),
+        scalablyTypedWantedLibs().keys.toArray,
         scalablyTypedIgnoredLibs().toArray,
         scalablyTypedUseScalaJsDomTypes(),
         scalablyTypedIncludeDev(),
