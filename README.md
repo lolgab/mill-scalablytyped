@@ -65,6 +65,17 @@ If `true` generate facades for dev dependencies as well. Default: `false`
 
 Adjusts the top-level package name of the generated code.
 
+## Cookbook
+
+### How to use a npm project not in the project root directory
+
+If your npm project is not in the root of your project, you'll need to override the following two settings:
+
+```scala
+def scalablyTypedBasePath = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" }
+def scalablyTypedPackageJson = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" / "package.json" }
+```
+
 ## Changelog
 
 ### 0.4.0
