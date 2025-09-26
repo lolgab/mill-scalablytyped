@@ -10,7 +10,7 @@ code, and then add it to your application's `moduleDeps`:
 ```scala
 //| mill-version: 1.0.5
 //| mvnDeps:
-//|   - com.github.lolgab::mill-scalablytyped::0.3.1
+//|   - com.github.lolgab::mill-scalablytyped::0.4.0
 package build
 
 import mill.*, mill.scalalib.*, mill.scalajslib.*
@@ -66,6 +66,16 @@ If `true` generate facades for dev dependencies as well. Default: `false`
 Adjusts the top-level package name of the generated code.
 
 ## Changelog
+
+### 0.4.0
+
+- Add generated sources to `generatedSources` instead of generating dependencies
+to be added to `mvnDeps`.
+This allows compilation to run on the normal Mill Zinc worker, on the same compiler
+Mill uses normallys
+- Remove dependency on Bloop
+- Rename `useScalaJsDomTypes` into `scalablyTypedUseScalaJsDomTypes`
+- Invalidate import only when dependencies change, and not on all `package.json` changes
 
 ### 0.3.0
 
