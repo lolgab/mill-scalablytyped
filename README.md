@@ -73,7 +73,7 @@ If your npm project is not in the root of your project, you'll need to override 
 
 ```scala
 def scalablyTypedBasePath = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" }
-def scalablyTypedPackageJson = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" / "package.json" }
+def scalablyTypedPackageJson = Task.Source { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" / "package.json" }
 ```
 
 ## Changelog
