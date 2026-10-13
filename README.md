@@ -44,6 +44,18 @@ The base path where package.json and node_modules are.
 Defaults to the project root directory (the directory of `build.mill`).
 When overriding you need to override also `scalablyTypedBasePath` accordingly.
 
+### scalablyTypedPackageLock
+
+The path of `package-lock.json`. Defaults to the project root directory.
+The conversion re-runs whenever it changes, even if `package.json` does not.
+When overriding you need to override also `scalablyTypedBasePath` accordingly.
+
+### scalablyTypedNpmCi
+
+If `true`, run `npm ci` in `scalablyTypedBasePath` before the conversion when
+`node_modules` is missing or older than `package-lock.json`, so the facades are
+generated from exactly the locked versions. Default: `false`
+
 ### scalablyTypedIgnoredLibs
 
 The typescript dependencies to ignore during the conversion
@@ -74,6 +86,7 @@ If your npm project is not in the root of your project, you'll need to override 
 ```scala
 def scalablyTypedBasePath = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" }
 def scalablyTypedPackageJson = Task { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" / "package.json" }
+def scalablyTypedPackageLock = Task.Source { mill.api.BuildCtx.workspaceRoot / "my_npm_project_directory" / "package-lock.json" }
 ```
 
 ## Changelog
