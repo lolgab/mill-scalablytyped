@@ -18,6 +18,20 @@ trait ScalablyTyped extends ScalaJSModule {
     mill.api.BuildCtx.workspaceRoot / "package.json"
   }
 
+  /** The path of package-lock.json. The conversion re-runs whenever it changes,
+    * as it pins the exact versions installed in node_modules. When overriding
+    * you need to override also `scalablyTypedBasePath` accordingly.
+    */
+  def scalablyTypedPackageLock: T[PathRef] = Task.Source {
+    mill.api.BuildCtx.workspaceRoot / "package-lock.json"
+  }
+
+  /** When true, runs `npm ci` in `scalablyTypedBasePath` before the conversion
+    * if node_modules is missing or older than package-lock.json, so the facades
+    * are generated from exactly the locked versions.
+    */
+  def scalablyTypedNpmCi: T[Boolean] = Task { false }
+
   /** All the libs to run ScalablyTyped on */
   def scalablyTypedWantedLibs = Task {
     val packageJson = scalablyTypedPackageJson()
@@ -92,6 +106,22 @@ trait ScalablyTyped extends ScalaJSModule {
     }
 
     val basePath = scalablyTypedBasePath()
+    val packageLock = scalablyTypedPackageLock().path
+
+    if (scalablyTypedNpmCi()) {
+      if (!os.exists(packageLock))
+        sys.error(s"scalablyTypedNpmCi needs $packageLock")
+      // npm (v7+) rewrites this file on every install
+      val installed = basePath / "node_modules" / ".package-lock.json"
+      if (
+        !os.exists(installed) ||
+        os.mtime(installed) < os.mtime(packageLock)
+      ) {
+        Task.log.info(s"Running `npm ci` in $basePath")
+        os.proc("npm", "ci")
+          .call(cwd = basePath, stdout = os.Inherit, stderr = os.Inherit)
+      }
+    }
 
     scalablyTypedWorker()
       .scalablytypedImport(
