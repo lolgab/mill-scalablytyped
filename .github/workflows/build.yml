@@ -45,9 +45,8 @@ jobs:
         run: ./mill --no-daemon --ticker false __.compile
       - name: Publish Artifacts
         run: ./mill --no-daemon --ticker false __.publishArtifacts
-    # - name: Test
-    #   run:
-    #     ./mill --no-daemon --ticker false __.test
+      - name: Test
+        run: ./mill --no-daemon --ticker false __.test
   publish-sonatype:
     if: github.repository == 'lolgab/mill-scalablytyped' && contains(github.ref, 'refs/tags/')
     needs: build
