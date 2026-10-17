@@ -1,16 +1,16 @@
-import mill._
+//| mill-version: 1.3.0
+//| mvnDeps:
+//|   - com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION
+//|   - com.goyeau::mill-scalafix::0.6.0
 
-import mill.scalalib._
-import mill.scalalib.publish._
-import $ivy.`com.lihaoyi::mill-contrib-buildinfo:`
+package build
+
+import mill.*
+import mill.scalalib.*
+import mill.scalalib.publish.*
 import mill.contrib.buildinfo.BuildInfo
-import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
-import de.tobiasroeser.mill.integrationtest._
-import $ivy.`com.goyeau::mill-scalafix::0.4.2`
+import mill.util.VcsVersion
 import com.goyeau.mill.scalafix.ScalafixModule
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
-import de.tobiasroeser.mill.vcs.version.VcsVersion
-import os.Path
 
 def millBinaryVersion(millVersion: String) = millVersion.split('.').head
 val millVersions = Seq("1.0.0")
@@ -32,7 +32,7 @@ trait CommonPublish extends PublishModule {
       Developer("lolgab", "Lorenzo Gabriele", "https://github.com/lolgab")
     )
   )
-  def publishVersion = VcsVersion.vcsState().format()
+  def publishVersion = Task { VcsVersion.vcsState().format() }
 }
 
 object `mill-scalablytyped`
@@ -42,23 +42,15 @@ trait MillScalablyTypedCross
     with CommonPublish
     with BuildInfo
     with ScalafixModule
-    with Cross.Module[String] {
+    with Cross.Module[String] { plugin =>
   def millBinaryVersion: String = crossValue
   override def artifactName = s"mill-scalablytyped_mill$millBinaryVersion"
 
-  override def sources = T.sources(
-    super.sources() ++ Seq(
-      moduleDir / s"src-mill${millVersion(millBinaryVersion).split('.').take(1).mkString(".")}"
-    )
-      .map(PathRef(_))
-  )
   def scalaVersion = "3.7.3"
-  override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-libs-scalajslib:${millVersion(millBinaryVersion)}"
+  override def compileMvnDeps = super.compileMvnDeps() ++ Seq(
+    mvn"com.lihaoyi::mill-libs-scalajslib:${millVersion(millBinaryVersion)}"
   )
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
-
-  def ivyDeps = super.ivyDeps() ++ Agg()
 
   def buildInfoMembers = Seq(
     BuildInfo.Value("publishVersion", publishVersion()),
@@ -69,6 +61,37 @@ trait MillScalablyTypedCross
 
   def scalacOptions =
     super.scalacOptions() ++ Seq("-Wunused:all", "-deprecation")
+
+  /** Runs the projects in `itest/resources` with a real Mill launcher against
+    * the plugin, worker and worker API published to test-local repositories.
+    * Needs `node` and `npm` on the `PATH`.
+    */
+  object itest extends ScalaTests with TestModule.Utest {
+    def mvnDeps = Seq(
+      mvn"com.lihaoyi::mill-testkit:${millVersion(millBinaryVersion)}"
+    )
+    def forkEnv = Task {
+      val testRepos = Seq(
+        plugin.publishLocalTestRepo(),
+        `mill-scalablytyped-worker-api`.publishLocalTestRepo(),
+        `mill-scalablytyped-worker`.publishLocalTestRepo()
+      ).map(_.path.toNIO.toUri.toASCIIString)
+      val repos = testRepos ++
+        Seq(Task.env.getOrElse("COURSIER_REPOSITORIES", "ivy2Local|central"))
+      super.forkEnv() ++ Map(
+        "MILL_EXECUTABLE_PATH" -> millExecutable.assembly().path.toString,
+        "COURSIER_REPOSITORIES" -> repos.mkString("|"),
+        "MILL_SCALABLYTYPED_TEST_VERSION" -> plugin.publishVersion()
+      )
+    }
+
+    object millExecutable extends JavaModule {
+      def mvnDeps = Seq(
+        mvn"com.lihaoyi:mill-runner-launcher_3:${millVersion(millBinaryVersion)}"
+      )
+      def mainClass = Some("mill.launcher.MillLauncherMain")
+    }
+  }
 }
 
 object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
@@ -76,30 +99,8 @@ object `mill-scalablytyped-worker-api` extends JavaModule with CommonPublish
 object `mill-scalablytyped-worker` extends ScalaModule with CommonPublish {
   def moduleDeps = Seq(`mill-scalablytyped-worker-api`)
   def scalaVersion = scala212
-  def ivyDeps = Agg(
-    ivy"org.scalablytyped.converter::importer-portable:1.0.0-beta45",
-    ivy"org.apache.logging.log4j:log4j-core:2.17.2"
+  def mvnDeps = Seq(
+    mvn"org.scalablytyped.converter::importer-portable:1.0.0-beta45",
+    mvn"org.apache.logging.log4j:log4j-core:2.17.2"
   )
-}
-
-object itest extends Cross[itestCross]() // TODO: Port integration tests
-trait itestCross extends MillIntegrationTestModule with Cross.Module[String] {
-  def millVersion = crossValue
-  def millTestVersion = millVersion
-  def pluginsUnderTest = Seq(
-    `mill-scalablytyped`(millBinaryVersion(millVersion))
-  )
-  def temporaryIvyModules = Seq(
-    `mill-scalablytyped-worker`,
-    `mill-scalablytyped-worker-api`
-  )
-  def testBase = moduleDir / "src"
-  def testInvocations = T {
-    Seq(
-      PathRef(testBase / "simple") -> Seq(
-        TestInvocation.Targets(Seq("prepare")),
-        TestInvocation.Targets(Seq("verify"))
-      )
-    )
-  }
 }
