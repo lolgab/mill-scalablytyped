@@ -1,0 +1,17 @@
+//| mvnDeps:
+//|   - com.github.lolgab::mill-scalablytyped::TEST
+
+package build
+
+import mill.*
+import mill.scalalib.*
+import mill.scalajslib.*
+import mill.scalajslib.api.ModuleKind
+import com.github.lolgab.mill.scalablytyped.*
+
+object module extends ScalaJSModule with ScalablyTyped {
+  def scalaVersion = "3.7.3"
+  def scalaJSVersion = "1.20.1"
+  def moduleKind = ModuleKind.CommonJSModule
+  def scalablyTypedStdLibs = Seq("es2022")
+}
