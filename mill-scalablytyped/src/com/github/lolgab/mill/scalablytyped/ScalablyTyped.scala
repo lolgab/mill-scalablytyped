@@ -68,6 +68,13 @@ trait ScalablyTyped extends ScalaJSModule {
     scalablyTypedWorker().defaultOutputPackage()
   }
 
+  /** The TypeScript standard libraries to convert into the `std` package, as
+    * named by the `lib.<name>.d.ts` files of the `typescript` package (for
+    * example `es2022`, `dom` or `es2020.bigint`). Equivalent to sbt's
+    * `stStdlib`.
+    */
+  def scalablyTypedStdLibs: T[Seq[String]] = Task { Seq("es6") }
+
   /** Generate facades for dev dependencies as well.
     */
   def scalablyTypedIncludeDev: T[Boolean] = Task { false }
@@ -103,7 +110,8 @@ trait ScalablyTyped extends ScalaJSModule {
         scalablyTypedUseScalaJsDomTypes(),
         scalablyTypedIncludeDev(),
         flavour,
-        scalablyTypedOutputPackage()
+        scalablyTypedOutputPackage(),
+        scalablyTypedStdLibs().toArray
       )
       .map { source =>
         val path = targetPath / os.RelPath(source.relPath)

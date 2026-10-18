@@ -57,6 +57,12 @@ When true (which is the default) uses scala-js-dom types when possible instead o
 The React flavour used by ScalablyTyped
 Can be one of `Flavour.Normal`, `Flavour.Slinky`, `Flavour.SlinkyNative` and `Flavour.ScalajsReact` 
 
+### scalablyTypedStdLibs
+
+The TypeScript standard libraries converted into the `std` package, named after
+the `lib.<name>.d.ts` files of the `typescript` package (for example `es2022`,
+`dom` or `es2020.bigint`). Default: `Seq("es6")`
+
 ### scalablyTypedIncludeDev
 
 If `true` generate facades for dev dependencies as well. Default: `false`
