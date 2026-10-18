@@ -59,5 +59,10 @@ object IntegrationTests extends TestSuite {
       assert(tester.eval("module.compile").isSuccess)
       assert(installedLodashTypes() == "4.14.182")
     }
+    test("std-libs") {
+      val tester = buildTester("std-libs")
+      npmCi(tester)
+      assert(runNode(tester, "module") == "3")
+    }
   }
 }
