@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/mill
-          key: mill-${{ hashFiles('.mill-version') }}
+          key: mill-${{ hashFiles('build.mill') }}
       - name: Coursier cache
         uses: actions/cache@v3
         with:
@@ -38,25 +38,24 @@ jobs:
           distribution: "temurin"
           java-version: "11"
       - name: Check formatting
-        run: ./mill --no-server --disable-ticker mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
+        run: ./mill --no-daemon --ticker false mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
       - name: Check scalafix
-        run: ./mill --no-server --disable-ticker __.fix --check
+        run: ./mill --no-daemon --ticker false __.fix --check
       - name: Compile
-        run: ./mill --no-server --disable-ticker __.compile
+        run: ./mill --no-daemon --ticker false __.compile
       - name: Publish Artifacts
-        run: ./mill --no-server --disable-ticker __.publishArtifacts
-    # - name: Test
-    #   run:
-    #     ./mill --no-server --disable-ticker __.test
+        run: ./mill --no-daemon --ticker false __.publishArtifacts
+      - name: Test
+        run: ./mill --no-daemon --ticker false __.testForked
   publish-sonatype:
     if: github.repository == 'lolgab/mill-scalablytyped' && contains(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-22.04
     env:
-      SONATYPE_PGP_PRIVATE_KEY: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY }}
-      SONATYPE_PGP_PRIVATE_KEY_PASSWORD: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY_PASSWORD }}
-      SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MILL_PGP_SECRET_BASE64: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY }}
+      MILL_PGP_PASSPHRASE: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY_PASSWORD }}
+      MILL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USER }}
+      MILL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       LANG: "en_US.UTF-8"
       LC_MESSAGES: "en_US.UTF-8"
       LC_ALL: "en_US.UTF-8"
@@ -73,16 +72,5 @@ jobs:
       - name: Publish to Maven Central
         run: |
           if [[ $(git tag --points-at HEAD) != '' ]]; then
-            echo $SONATYPE_PGP_PRIVATE_KEY | base64 --decode --ignore-garbage > gpg_key
-            gpg --import --no-tty --batch --yes gpg_key
-            rm gpg_key
-            ./mill mill.scalalib.SonatypeCentralPublishModule/publishAll \
-              --username "$SONATYPE_USER" \
-              --password "$SONATYPE_PASSWORD" \
-              --gpgArgs "--passphrase=$SONATYPE_PGP_PRIVATE_KEY_PASSWORD,--no-tty,--pinentry-mode,loopback,--batch,--yes,-a,-b" \
-              --publishArtifacts __.publishArtifacts \
-              --readTimeout  36000 \
-              --awaitTimeout 36000 \
-              --connectTimeout 36000 \
-              --shouldRelease true
+            ./mill mill.javalib.SonatypeCentralPublishModule/
           fi
